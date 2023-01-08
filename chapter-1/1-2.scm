@@ -38,3 +38,23 @@
           ((= kind-of-coin 4) 25)
           ((= kind-of-coin 5) 50)))
   (cc amount 5))
+
+
+;; Exercise 1.11
+
+(define (f n)
+  (if (< n 3) n
+      (+ (f (- n 1))
+         (* 2 (f (- n 2)))
+         (* 3 (f (- n 3))))))
+
+(define (f-iter n)
+  (define (iter c p pp i)
+    (cond
+     ((= i n) c)
+     ((< i 2) (iter (1+ c) c p (1+ i)))
+     (else (iter (+ c (* 2 p) (* 3 pp))
+                 c
+                 p
+                 (1+ i)))))
+  (iter 0 0 0 0))
