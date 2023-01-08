@@ -11,3 +11,13 @@
 (define (g n) (A 1 n))
 (define (h n) (A 2 n))
 (define (k n) (* 5 n n))
+
+
+;; 1.2.2 Tree Recursion
+
+(define (fib-iter n)
+  (define (iter c p i)
+    (if (= i n) c
+        (iter (+ c p) c (1+ i))))
+  (if (= n 0) 1
+      (iter 1 0 0)))
