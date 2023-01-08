@@ -58,3 +58,20 @@
                  p
                  (1+ i)))))
   (iter 0 0 0 0))
+
+
+;; Exercise 1.12
+
+(define (pascal row col)
+  (cond
+   ((> col row) (error "illegal input: col must be <= row"))
+   ((or (= col 0) (= col row)) 1)
+   (else (+ (pascal (- row 1) (- col 1))
+            (pascal (- row 1) col)))))
+
+(define (pascal-row row)
+  (format #t "~a\n"
+          (map (lambda (col) (pascal row col)) (iota (1+ row)))))
+
+(define (pascal-triangle size)
+  (for-each pascal-row (iota size)))
