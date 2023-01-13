@@ -75,3 +75,25 @@
 
 (define (pascal-triangle size)
   (for-each pascal-row (iota size)))
+
+;; Exercise 1.15
+
+(define (cube x) (* x x x))
+(define (p x) (- (* 3 x) (* 4 (cube x))))
+(define (sine angle)
+   (if (not (> (abs angle) 0.1))
+       angle
+       (p (sine (/ angle 3.0)))))
+
+(define (counter fn)
+  (define count 0)
+  (define (wrapped x)
+    (set! count (1+ count))
+    (fn x))
+  (define (get-count) count)
+  (list (cons "fn" wrapped) (cons "get" get-count)))
+
+;; 1.
+;; (define p-counter (counter p))
+;; (define p (assoc-ref p-counter "fn"))
+;; (define p-counter (assoc-ref p-counter "get"))
