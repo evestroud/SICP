@@ -131,3 +131,25 @@
      ((even? n) (iter a (square b) (/ n 2)))
      (else (iter (* a b) b (- n 1)))))
   (iter 1 b n))
+
+;; Exercise 1.17
+
+(define (double x) (+ x x))
+
+(define (halve x) (/ x 2))
+
+(define (mult-fast a b)
+  (cond
+   ((= 1 a) b)
+   ((even? a) (double (mult-fast (halve a) b)))
+   (else (+ b (mult-fast (- a 1) b)))))
+
+;; Exercise 1.18
+
+(define (mult-fast-iter a b)
+  (define (iter a b c)
+    (cond
+     ((= 0 a) c)
+     ((even? a) (iter (halve a) (double b) c))
+     (else (iter (- a 1) b (+ b c)))))
+  (iter a b 0))
