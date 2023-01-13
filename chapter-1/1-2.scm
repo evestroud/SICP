@@ -97,3 +97,27 @@
 ;; (define p-counter (counter p))
 ;; (define p (assoc-ref p-counter "fn"))
 ;; (define p-counter (assoc-ref p-counter "get"))
+
+
+;; 1.2.4 Exponentiation
+
+(define (expt-rec b n)
+  (if (= n 0)
+      1
+      (* b (expt-rec b (- n 1)))))
+
+(define (expt-iter b n)
+  (define (iter i total)
+    (if (= i n)
+        total
+        (iter (1+ i) (* b total))))
+  (iter 0 1))
+
+(define (expt-fast b n)
+  (cond
+   ((= n 0) 1)
+   ((even? n) (square (expt-fast b (/ n 2))))
+   (else (* b (expt-fast b (- n 1))))))
+
+(define (square n)
+  (* n n))
