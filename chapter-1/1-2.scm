@@ -226,3 +226,22 @@
         ((fermat-test n)
          (fast-prime? n (- times 1)))
         (else #f)))
+
+;; Exercise 1.22
+
+(define (timed-prime-test n)
+  (start-prime-test n (runtime)))
+
+(define (start-prime-test n start-time)
+  (if (prime? n)
+      (format #t "~a - ~a\n" n (- (runtime) start-time))))
+
+(define (runtime)
+  (exact->inexact
+   (let ((time (gettimeofday)))
+     (+ (car time) (/ (cdr time) 1000000)))))
+
+(define (search-for-primes start end)
+  (display start)
+  (let ((start (if (even? start) (1+ start) start)))
+    (for-each timed-prime-test (iota (- end start) start 2))))
