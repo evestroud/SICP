@@ -196,7 +196,8 @@
            test-divisor)
           (else (find-divisor
                  n
-                 (+ test-divisor 1)))))
+                 ; below modified for 1.23
+                 (if (= test-divisor 2) 3 (+ test-divisor 2))))))
   (find-divisor n 2))
 
 (define (divides? a b)
@@ -218,6 +219,7 @@
 
 (define (fermat-test n)
   (define (try-it a)
+    ;; (= (expmod-2 a n n) a)) ; Exercise 1.25
     (= (expmod a n n) a))
   (try-it (+ 1 (random (- n 1)))))
 
@@ -233,7 +235,7 @@
   (start-prime-test n (runtime)))
 
 (define (start-prime-test n start-time)
-  (if (prime? n)
+  (if (fast-prime? n) ; modified for Exercise 1.24
       (format #t "~a - ~a\n" n (- (runtime) start-time))))
 
 (define (runtime)
@@ -242,6 +244,10 @@
      (+ (car time) (/ (cdr time) 1000000)))))
 
 (define (search-for-primes start end)
-  (display start)
   (let ((start (if (even? start) (1+ start) start)))
-    (for-each timed-prime-test (iota (- end start) start 2))))
+    (for-each timed-prime-test (iota (floor-quotient (- end start) 2) start 2))))
+
+;; Exercise 1.25
+
+(define (expmod-2 base exp m)
+  (remainder (expt-fast base exp) m))
