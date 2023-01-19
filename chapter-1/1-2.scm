@@ -251,3 +251,22 @@
 
 (define (expmod-2 base exp m)
   (remainder (expt-fast base exp) m))
+
+;; Exercise 1.27
+
+(define (fermat-comprehensive n)
+  (define (try-it a)
+    (= (expmod a n n) a))
+  (define (test-all i)
+    (cond
+     ((not (try-it i)) #f)
+     ((<= n (square i))  #t)
+     (else (test-all (1+ i)))))
+  (if (= n 2)
+      #t
+      (test-all 2)))
+
+(define (debug x)
+  (display x)
+  (newline)
+  x)
