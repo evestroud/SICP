@@ -270,3 +270,32 @@
   (display x)
   (newline)
   x)
+
+;; Exercise 1.28
+
+
+(define (miller-rabin n)
+  (define (nontrivial? x m)
+    (if (and (not (= 1 x)) (not (= (- m 1) x))
+             (= (remainder (square x) m) 1))
+        0
+        x))
+  (define (expmod base exp m)
+    (cond ((= exp 0) 1)
+          ((even? exp)
+           (remainder
+            (square
+             (nontrivial? (expmod base (/ exp 2) m) m))
+            m))
+          (else
+           (remainder
+            (* base (expmod base (- exp 1) m))
+            m))))
+  (define (try-it a)
+    (= (expmod a (- n 1) n) 1))
+  (define (test times)
+    (cond ((= times 0) #t)
+          ((try-it (+ 1 (random (- n 1))))
+           (test (- times 1)))
+          (else #f)))
+  (test 10))
