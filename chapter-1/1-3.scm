@@ -30,3 +30,16 @@
   (define (add-dx x) (+ x dx))
   (* (sum f (+ a (/ dx 2.0)) add-dx b)
      dx))
+
+;; Exercise 1.29
+
+(define (simpson-integral f a b n)
+  (if (> (remainder n 2) 0) (error "n must be even"))
+  (define h (/ (- b a) n))
+  (define (y k) (f (+ a (* k h))))
+  (define (term k)
+    (cond ((= 0 k) (y k))
+          ((even? k) (* 4 (y k)))
+          ((odd? k) (* 2 (y k)))))
+  (* (/ h 3)
+     (sum term 0 1+ n)))
