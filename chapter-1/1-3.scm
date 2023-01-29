@@ -101,3 +101,41 @@
 
 (define (product term a next b)
   (accumulate-recursive * 1 term a next b))
+
+;; 1.33
+
+(define (filtered-accumulate filter combiner null-value term a next b)
+  (define (iter a result)
+    (cond ((> a b) result)
+          ((filter a) (iter (next a) (combiner (term a) result)))
+          (else (iter (next a) result))))
+  (iter a null-value))
+
+(define (prime? n)
+  (define (divisible-by-any? n factors)
+    (cond ((null? factors) #f)
+          ((= 0 (remainder n (car factors))) #t)
+          (else (divisible-by-any? n (cdr factors)))))
+  (define (iter i factors)
+    (cond ((= i n) #t)
+          ((divisible-by-any? i factors) (iter (1+ i) factors))
+          ((= (remainder n i) 0) #f)
+          (else (iter (1+ i) (append factors (list i))))))
+  (if (< n 2) #f (iter 2 '())))
+
+(define (square x) (* x x))
+
+(define (sum-squares-primes a b)
+  (filtered-accumulate prime? + 0 square a 1+ b))
+
+(define (gcd a b)
+  (if (= b 0)
+      a
+      (gcd b (remainder a b))))
+
+(define (relatively-prime? i n)
+  (= 1 (gcd i n)))
+
+(define (product-relatively-prime n)
+  (define (filter i) (relatively-prime? i n))
+  (filtered-accumulate filter * 1 identity 1 1+ n))
