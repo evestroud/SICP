@@ -213,7 +213,7 @@
 
 ;; Exercise 1.37
 
-(define (cont-frac n d k)
+(define (cont-frac f n d k)
   ;; (define (recur n d i)
   ;;   (if (= i k)
   ;;       0
@@ -222,18 +222,19 @@
   (define (iter i acc)
     (if (= i 0)
         acc
-        (iter (- i 1) (/ (n i) (+ (d i) acc)))))
+        (iter (- i 1) (/ (n i) (f (d i) acc)))))
   (iter k 0))
 
 (define (phi-approx k)
   (/ 1
-     (cont-frac (lambda (i) 1.0) (lambda (i) 1.0) k)))
+     (cont-frac + (lambda (i) 1.0) (lambda (i) 1.0) k)))
 
 ;; Exercise 1.38
 
 (define (e-approx k)
   (+ 2
-     (cont-frac (lambda (x) 1.0)
+     (cont-frac +
+                (lambda (x) 1.0)
                 (lambda (x)
                   (if (= 2 (remainder x 3))
                       (* 2 (+ 1 (floor-quotient x 3)))
