@@ -210,3 +210,21 @@
 ;; Exercise 1.36
 
 ;(fixed-point (lambda (x) (/ (log 1000) (log x))) 2.0)
+
+;; Exercise 1.37
+
+(define (cont-frac n d k)
+  ;; (define (recur n d i)
+  ;;   (if (= i k)
+  ;;       0
+  ;;       (+ (/ (n i) (+ (d i) (recur n d (1+ i)))))))
+  ;; (recur n d 0)
+  (define (iter i acc)
+    (if (= i 0)
+        acc
+        (iter (- i 1) (/ (n i) (+ (d i) acc)))))
+  (iter k 0))
+
+(define (phi-approx k)
+  (/ 1
+     (cont-frac (lambda (i) 1.0) (lambda (i) 1.0) k)))
