@@ -240,3 +240,12 @@
                       (* 2 (+ 1 (floor-quotient x 3)))
                       1))
                 k)))
+
+;; Exercise 1.39
+
+(define (tan-cf x k)
+  (exact->inexact
+   (cont-frac -
+              (lambda (i) (if (= 1 i) x (square x)))
+              (lambda (i) (+ 1 (* 2 (- i 1))))
+              k)))
