@@ -228,3 +228,14 @@
 (define (phi-approx k)
   (/ 1
      (cont-frac (lambda (i) 1.0) (lambda (i) 1.0) k)))
+
+;; Exercise 1.38
+
+(define (e-approx k)
+  (+ 2
+     (cont-frac (lambda (x) 1.0)
+                (lambda (x)
+                  (if (= 2 (remainder x 3))
+                      (* 2 (+ 1 (floor-quotient x 3)))
+                      1))
+                k)))
