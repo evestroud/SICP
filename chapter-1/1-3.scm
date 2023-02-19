@@ -318,3 +318,25 @@
 (define (double f)
   (lambda (x)
     (f (f x))))
+
+;; Exercise 1.42
+
+(define (compose f g)
+  (lambda (x) (f (g x))))
+
+;; Exercise 1.43
+
+(define (repeated f n)
+  (lambda (x)
+    (define (iter acc i)
+      (if (= i n)
+          acc
+          (iter (f acc) (inc i))))
+    (iter x 0)))
+
+(define (repeated f n)
+  (define (iter g i)
+    (if (= i n)
+        g
+        (iter (compose g f) (inc i))))
+  (iter f 1))
