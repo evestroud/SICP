@@ -340,3 +340,12 @@
         g
         (iter (compose g f) (inc i))))
   (iter f 1))
+
+;; Exercise 1.44
+
+(define (smooth f)
+  (lambda (x)
+    (average (f (- x dx)) (f x) (f (+ x dx)))))
+
+(define (n-fold-smooth f n)
+  ((repeated smooth n) f))
