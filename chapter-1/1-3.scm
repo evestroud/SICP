@@ -349,3 +349,52 @@
 
 (define (n-fold-smooth f n)
   ((repeated smooth n) f))
+
+;; Exercise 1.45
+
+(define (nroot-rdamp n r)
+  (lambda (x)
+    (fixed-point
+     ((repeated average-damp r)
+      (lambda (y) (/ x (expt y (- n 1)))))
+     1.0)))
+
+;; Was not able to solve this because the expected behavior of this function
+;; appears to be different than the actual behavior. It is expected that it will
+;; "fail to converge" (enter an infinite loop) quickly as n is increased, and r
+;; will need to be increased to correct this failure. This failure to converge
+;; does not happen with inputs small enough to reasonably analyze with manual
+;; testing. I believe some difference between 2023 Guile Scheme and 1996 MIT
+;; Scheme causes this function to behave very differently.
+;;
+;; The expected behavior is to need have a logarithmic relationship between n
+;; and r (double n, increment r) to guarantee that the function converges. My
+;; original approach to this was to use the above function and manually change
+;; n and r to find a simple relationship between the two variables. This would
+;; have worked fine with an implementation of Scheme that behaved similarly to
+;; MIT Scheme.
+
+;; Exercise 1.46
+
+(define (iterative-improve good-enough? improve)
+  (define (iter guess)
+    (if (good-enough? guess)
+        guess
+        (iter (improve guess))))
+  iter)
+
+(define (sqrt x)
+  ((iterative-improve
+    (lambda (guess)
+      (< (abs (- (square guess) x)) 0.001))
+    (lambda (guess)
+      (average guess (/ x guess))))
+   1.0))
+
+(define (fixed-point f)
+  ((iterative-improve
+    (lambda (guess)
+      (< (abs (- guess (f guess))) .00001))
+    (lambda (guess)
+      (f guess)))
+   1.0))
