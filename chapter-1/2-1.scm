@@ -40,6 +40,7 @@
 (define one-half (make-rat 1 2))
 (define one-third (make-rat 1 3))
 
+
 ;; Exercise 2.1
 
 (define (make-rat n d)
@@ -48,6 +49,7 @@
       (if (> d 0)
           (cons n d)
           (cons (* -1 n) (* -1 d))))))
+
 
 ;; Exercise 2.2
 
@@ -78,11 +80,33 @@
          (y-point (end-segment s)))
       2)))
 
-
 (define (print-point p)
-  (display "(")
-  (display (x-point p))
-  (display ",")
-  (display (y-point p))
-  (display ")")
-  (newline))
+  (display (format #f "(~a,~a)\n" (x-point p) (y-point p))))
+
+
+;; Exercise 2.3
+;; ... straight up don't know enough geometry to do this without spending
+;; a bunch of time and looking everything up. I get the purpose of the
+;; exercise and don't feel the need to put myself through that.
+;; The reliance on recent and intuitive familiarity with mathematical
+;; concepts all the way up to calculus is a major weakness of this text.
+;; Can you not really demonstrate these concepts more intuitively?
+;; Mathematics is notoriously arcane and reliant on obsession or talent.
+
+(define (make-rectangle h w origin angle)
+  (cons (cons h w) (cons origin angle)))
+
+(define (rectangle-height r)
+  (car (car r)))
+
+(define (rectangle-width r)
+  (cdr (car r)))
+
+(define (orthagonal? p1 p2 p3))
+
+(define (rect-perimeter r)
+  (+ (* 2 (rect-height r))
+     (* 2 (rect-width r))))
+
+(define (rect-area r)
+  (* (rect-height r) (rect-width r)))
