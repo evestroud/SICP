@@ -102,11 +102,37 @@
 (define (rectangle-width r)
   (cdr (car r)))
 
-(define (orthagonal? p1 p2 p3))
-
 (define (rect-perimeter r)
   (+ (* 2 (rect-height r))
      (* 2 (rect-width r))))
 
 (define (rect-area r)
   (* (rect-height r) (rect-width r)))
+
+
+;; Exercise 2.4
+
+(define (cons-proc x y)
+  (lambda (m) (m x y)))
+
+(define (car-proc z)
+  (z (lambda (p q) p)))
+
+(define (cdr-proc z)
+  (z (lambda (p q) q)))
+
+
+;; Exercise 2.5
+
+(define (cons-exp x y)
+  (* (expt 2 x) (expt 3 y)))
+
+(define (car-exp z)
+  (if (= (remainder z 2) 1)
+      0
+      (1+ (car-exp (/ z 2)))))
+
+(define (cdr-exp z)
+  (if (= (remainder z 3) 1)
+      0
+      (1+ (car-exp (/ z 3)))))
