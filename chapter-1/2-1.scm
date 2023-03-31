@@ -233,3 +233,32 @@
 
 ;; Tired of this, I want to get to interpreters.
 ;; Looked up the answer and it is very long and fussy.
+
+
+(define (make-center-width c w)
+  (make-interval (- c w) (+ c w)))
+
+(define (center i)
+  (/ (+ (lower-bound i)
+        (upper-bound i))
+     2))
+
+(define (width i)
+  (/ (- (upper-bound i)
+        (lower-bound i))
+     2))
+
+
+;; Exercise 2.12
+
+(define (make-center-percent c p)
+  (make-center-width c (* c p)))
+
+(define (interval-percent i)
+  (let ((w (width i)) (c (center i)))
+    (/ w c)))
+
+
+;; Exercises 2.13, 2.14, 2.15, 2.16
+
+;; These are math problems!!! They have nothing to do with programming!!!
