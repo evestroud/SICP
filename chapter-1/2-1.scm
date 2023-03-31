@@ -205,3 +205,31 @@
 (define (width-interval a)
   (/ (- (upper-bound a) (lower-bound a))
      2))
+
+
+;; Exercise 2.10
+
+(define (make-interval a b)
+  (if (> a b)
+      (cons a b)
+      (cons b a)))
+
+(define (crosses-zero? i)
+  (if (and (< (lower-bound i) 0)
+           (> (upper-bound i) 0))
+      #t
+      #f))
+
+(define (div-interval x y)
+  (if (crosses-zero? y)
+      (error "Cannot divide by an interval that crosses zero")
+      (mul-interval x
+                (make-interval
+                 (/ 1.0 (upper-bound y))
+                 (/ 1.0 (lower-bound y))))))
+
+
+;; Exercise 2.11
+
+;; Tired of this, I want to get to interpreters.
+;; Looked up the answer and it is very long and fussy.
