@@ -190,3 +190,18 @@
 
 (define (lower-bound interval)
   (cdr interval))
+
+
+;; Exercise 2.8
+
+(define (sub-interval x y)
+  (make-interval (- (upper-bound x)
+                    (upper-bound y))
+                 (- (lower-bound x)
+                    (lower-bound y))))
+
+;; Exercise 2.9
+
+(define (width-interval a)
+  (/ (- (upper-bound a) (lower-bound a))
+     2))
