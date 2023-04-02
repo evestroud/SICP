@@ -62,3 +62,12 @@
 
 (define (square-list items)
   (map square items))
+
+
+;; Exercise 2.23
+
+(define (for-each f l)
+  (if (null? l)
+      '()
+      (begin (f (car l))
+             (for-each f (cdr l)))))
