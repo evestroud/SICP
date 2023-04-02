@@ -36,3 +36,29 @@
 
 (define uk-coins
   (list 100 50 20 10 5 2 1 0.5))
+
+
+;; Exercise 2.20
+
+(define (same-parity . ints)
+  (display ints)
+  (newline)
+  (let ((parity (remainder (car ints) 2)))
+    (define (helper ints)
+      (cond
+       ((null? ints) '())
+       ((= parity (remainder (car ints) 2))
+        (cons (car ints) (helper (cdr ints))))
+       (else (helper (cdr ints)))))
+    (cons (car ints) (helper (cdr ints)))))
+
+
+;; Exercise 2.21
+
+(define (square-list items)
+  (if (null? items)
+      '()
+      (cons (square (car items)) (square-list (cdr items)))))
+
+(define (square-list items)
+  (map square items))
