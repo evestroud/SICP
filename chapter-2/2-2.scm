@@ -15,7 +15,7 @@
     (if (null? l)
         r
         (helper (cdr l)
-                (append (list (car l)) r))))
+                (cons (car l) r))))
   (helper l '()))
 
 
@@ -71,3 +71,15 @@
       '()
       (begin (f (car l))
              (for-each f (cdr l)))))
+
+
+;; Exercise 2.27
+
+(define (deep-reverse l)
+  (define (helper l r)
+    (cond
+     ((null? l) r)
+     ((pair? (car l))
+      (helper (cdr l) (cons (deep-reverse (car l)) r)))
+     (else (helper (cdr l) (cons (car l) r)))))
+  (helper l '()))
