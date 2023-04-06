@@ -158,3 +158,31 @@
   (cons length structure))
 
 ; No change needed to selectors
+
+
+;; Exercise 2.30
+
+(define (square-tree t)
+  (cond
+   ((null? t) '())
+   ((pair? (car t))
+    (cons (square-tree (car t))
+          (square-tree (cdr t))))
+   (else (cons (square (car t)) (square-tree (cdr t))))))
+
+(define (square-tree tree)
+  (map (lambda (t)
+         (if (pair? t)
+             (square-tree t)
+             (square t)))
+       tree))
+
+
+;; Exercise 2.31
+
+(define (tree-map fn tree)
+  (map (lambda (t)
+         (if (pair? t)
+             (tree-map fn t)
+             (fn t)))
+       tree))
