@@ -186,3 +186,58 @@
              (tree-map fn t)
              (fn t)))
        tree))
+
+
+;; Exercise 2.32 - had to look this one up
+
+(define (subsets s)
+  (if (null? s)
+      (list '())
+      (let ((rest (subsets (cdr s))))
+        (append rest
+                (map (lambda (x)
+                       (cons (car s) x))
+                     rest)))))
+
+
+;; 2.2.3 Sequences as Conventional Interfaces
+
+(define (filter predicate sequence)
+  (cond ((null? sequence) '())
+        ((predicate (car sequence))
+         (cons (car sequence)
+               (filter predicate
+                       (cdr sequence))))
+        (else  (filter predicate
+                       (cdr sequence)))))
+
+
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op
+                      initial
+                      (cdr sequence)))))
+
+(define (enumerate-interval low high)
+  (if (> low high)
+      '()
+      (cons low
+            (enumerate-interval
+             (+ low 1)
+             high))))
+
+
+;; Exercise 2.33
+
+(define (map p sequence)
+  (accumulate (lambda (x y) (cons (p x) y))
+              '() sequence))
+
+(define (append seq1 seq2)
+  (accumulate cons seq2 seq1))
+
+(define (length sequence)
+  (accumulate (lambda (x y) (1+ y))
+              0 sequence))
