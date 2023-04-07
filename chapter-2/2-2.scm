@@ -241,3 +241,27 @@
 (define (length sequence)
   (accumulate (lambda (x y) (1+ y))
               0 sequence))
+
+
+;; Exercise 2.34
+
+(define
+  (horner-eval x coefficient-sequence)
+  (accumulate
+   (lambda (this-coeff higher-terms)
+     (+ this-coeff (* x higher-terms)))
+   0
+   coefficient-sequence))
+
+
+;; Exercise 2.35
+
+(define (count-leaves t)
+  (accumulate +
+              0
+              (map (lambda (x)
+                     (cond
+                      ((null? x) 0)
+                      ((not (pair? x)) 1)
+                      (else (count-leaves x))))
+                   (list (car t) (cdr t)))))
