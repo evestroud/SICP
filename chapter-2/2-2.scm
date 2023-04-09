@@ -274,3 +274,46 @@
       '()
       (cons (accumulate op init (map car seqs))
             (accumulate-n op init (map cdr seqs)))))
+
+
+;; Exercise 2.37
+
+(define (dot-product v w)
+  (accumulate + 0 (map * v w)))
+
+(define (matrix-*-vector m v)
+  (map (lambda (mi)
+         (dot-product mi v)) m))
+
+(define (transpose mat)
+  (accumulate-n cons '() mat))
+
+(define (matrix-*-matrix m n)
+  (let ((cols (transpose n)))
+    (map (lambda (mi)
+           (matrix-*-vector n mi)) m)))
+
+
+;; Exercise 2.38 (provided code only, answer in notes)
+
+(define (fold-left op initial sequence)
+  (define (iter result rest)
+    (if (null? rest)
+        result
+        (iter (op result (car rest))
+              (cdr rest))))
+  (iter initial sequence))
+
+(define (fold-right op initial sequence)
+  (accumulate op initial sequence))
+
+
+;; Exercise 2.39
+
+(define (reverse sequence)
+  (fold-right
+   (lambda (x y) (append y (list x))) nil sequence))
+
+(define (reverse sequence)
+  (fold-left
+   (lambda (x y) (cons y x)) nil sequence))
