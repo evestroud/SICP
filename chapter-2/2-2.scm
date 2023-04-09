@@ -361,3 +361,24 @@
        (filter
         prime-sum?
         (unique-pairs n))))
+
+
+;; Exercise 2.41
+
+(define (unique-triples n)
+  (flatmap
+   (lambda (i)
+     (flatmap (lambda (j)
+            (map (lambda (k)
+                   (list k j i))
+                 (enumerate-interval 1 (- j 1))))
+          (enumerate-interval 1 (- i 1))))
+   (enumerate-interval 1 n)))
+
+(define (sums-to-s? s l)
+  (= s (apply + l)))
+
+(define (sum-to-s-triples s n)
+  (filter
+   (lambda (l) (sums-to-s? s l))
+   (unique-triples n)))
