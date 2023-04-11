@@ -382,3 +382,56 @@
   (filter
    (lambda (l) (sums-to-s? s l))
    (unique-triples n)))
+
+
+;; Exercise 2.42
+
+(define (queens board-size)
+  (define (queen-cols k)
+    (if (= k 0)
+        (list empty-board)
+        (filter
+         (lambda (positions)
+           (safe? k positions))
+         (flatmap
+          (lambda (rest-of-queens)
+            (map (lambda (new-row)
+                   (adjoin-position
+                    new-row
+                    k
+                    rest-of-queens))
+                 (enumerate-interval
+                  1
+                  board-size)))
+          (queen-cols (- k 1))))))
+  (queen-cols board-size))
+
+(define empty-board '())
+
+(define (safe? k positions)
+  (define (safe-iter i top mid bot)
+    (if (= i 0) #t
+    (let ((i-position (list-ref positions (- i 1))))
+      (cond
+       ((or (= top i-position)
+            (= mid i-position)
+            (= bot i-position))
+        #f)
+       (else (safe-iter (- i 1)
+                        (+ top 1)
+                        mid
+                        (- bot 1)))))))
+  (let ((k-position (list-ref positions (- k 1))))
+    (safe-iter (- k 1)
+               (+ k-position 1)
+               k-position
+               (- k-position 1))))
+
+(define (adjoin-position new-row k rest-of-queens)
+  (if (= k 1)
+      (cons new-row rest-of-queens)
+      (cons (car rest-of-queens)
+            (adjoin-position
+             new-row
+             (- k 1)
+             (cdr rest-of-queens)))))
