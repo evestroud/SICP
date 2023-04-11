@@ -1,3 +1,6 @@
+(define-module (chapter-1-2)
+  #:export (square))
+
 ;; Exercise 1.10
 
 (define (A x y)
