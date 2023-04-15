@@ -57,3 +57,46 @@
     (let ((half (beside (flip-horiz quarter)
                         quarter)))
       (below (flip-vert half) half))))
+
+
+;; Higher-order operations
+
+(define (square-of-four tl tr bl br)
+  (lambda (painter)
+    (let ((top (beside (tl painter)
+                       (tr painter)))
+          (bottom (beside (bl painter)
+                          (br painter))))
+      (below bottom top))))
+
+(define (flipped-pairs-2 painter)
+  (let ((combine4
+         (square-of-four identity
+                         flip-vert
+                         identity
+                         flip-vert)))
+    (combine4 painter)))
+
+(define (square-limit-2 painter n)
+  (let ((combine4
+         (square-of-four flip-horiz
+                         identity
+                         rotate180
+                         flip-vert)))
+    (combine4 (corner-split painter n))))
+
+
+;; Exercise 2.45
+
+(define (split d1 d2)
+  (define (helper painter n)
+    (if (= n 0)
+        painter
+        (let ((smaller (helper painter (- n 1))))
+          (d1 painter
+              (d2 smaller smaller)))))
+  helper)
+
+(define right-split-2 (split beside below))
+
+(define up-split-2 (split below beside))
