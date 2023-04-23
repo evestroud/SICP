@@ -171,3 +171,24 @@
 
 
 ;; Painters
+
+;; Exercise 2.48
+
+;; (define (make-segment start end)
+;;   (cons start end))
+
+;; (define (start-segment segment)
+;;   (car segment))
+
+;; (define (end-segment segment)
+;;   (cdr segment))
+
+
+;; Exercise 2.49
+
+(define (frame-outline frame)
+  (segments->painter
+   (vects->segments (list (make-vect 0 0)
+                          (make-vect 0 1)
+                          (make-vect 1 1)
+                          (make-vect 1 0)))))
