@@ -4,10 +4,10 @@
 
 ;; 2.2.4 Example: A Picture Language
 
-(define wave einstein)
+;; (define wave einstein)
 
-(define wave2 (beside wave (flip-vert wave)))
-;; (define wave4 (below wave2 wave2))
+;; (define wave2 (beside wave (flip-vert wave)))
+;; ;; (define wave4 (below wave2 wave2))
 
 (define (flipped-pairs painter)
   (let ((painter2
@@ -15,7 +15,7 @@
                  (flip-vert painter))))
     (below painter2 painter2)))
 
-(define wave4 (flipped-pairs wave))
+;; (define wave4 (flipped-pairs wave))
 
 (define (right-split painter n)
   (if (= n 0)
@@ -186,9 +186,42 @@
 
 ;; Exercise 2.49
 
-(define (frame-outline frame)
+(define outline
   (segments->painter
-   (vects->segments (list (make-vect 0 0)
-                          (make-vect 0 1)
-                          (make-vect 1 1)
-                          (make-vect 1 0)))))
+   (list (make-segment (make-vect 0 0) (make-vect 0 1))
+         (make-segment (make-vect 0 1) (make-vect 1 1))
+         (make-segment (make-vect 1 1) (make-vect 1 0))
+         (make-segment (make-vect 1 0) (make-vect 0 0)))))
+
+(define X
+  (segments->painter
+   (list (make-segment (make-vect 0 0) (make-vect 1 1))
+         (make-segment (make-vect 0 1) (make-vect 1 0)))))
+
+(define diamond
+  (segments->painter
+   (list (make-segment (make-vect 0 0.5) (make-vect 0.5 1))
+         (make-segment (make-vect 0.5 1) (make-vect 1 0.5))
+         (make-segment (make-vect 1 0.5) (make-vect 0.5 0))
+         (make-segment (make-vect 0.5 0) (make-vect 0 0.5)))))
+
+(define (gen-range start stop step)
+    (if (>= start stop)
+        '()
+        (cons start (gen-range (+ start step) stop step))))
+
+(define (nums->vects xnums ynums)
+  (map (lambda (x y) (make-vect x y))
+       xnums ynums))
+
+(define pi 3.141592654)
+(define (normalize x) (/ (+ x 1) 2))
+
+(define sin-vects
+  (map (lambda (x)
+         (make-vect (normalize x) (normalize (sin (* x pi)))))
+       (gen-range -1 1 0.1)))
+
+(define wave
+  (segments->painter
+   (vects->segments sin-vects)))
