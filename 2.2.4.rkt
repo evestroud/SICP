@@ -225,3 +225,50 @@
 (define wave
   (segments->painter
    (vects->segments sin-vects)))
+
+
+;; Exercise 2.50
+
+(define (flip-horiz painter)
+  (transform-painter painter
+                     (make-vect 1 0)
+                     (make-vect 0 0)
+                     (make-vect 1 1)))
+
+(define (rotate180 painter)
+  (transform-painter painter
+                     (make-vect 1 1)
+                     (make-vect 0 1)
+                     (make-vect 1 0)))
+
+(define (rotate270 painter)
+  (transform-painter painter
+                     (make-vect 0 1)
+                     (make-vect 0 0)
+                     (make-vect 1 1)))
+
+
+;; Exercise 2.51
+
+;; (define (below painter1 painter2)
+;;   (let ((split-point (make-vect 0.0 0.5)))
+;;     (let ((paint-top (transform-painter
+;;                       painter1
+;;                       (make-vect 0.0 0.5)
+;;                       (make-vect 1.0 0.5)
+;;                       (make-vect 0.0 1.0)
+;;                       ))
+;;           (paint-bottom (transform-painter
+;;                       painter2
+;;                       (make-vect 0.0 0.0)
+;;                       (make-vect 1.0 0.0)
+;;                       (make-vect 0.0 0.5)
+;;                       )))
+;;       (lambda (frame)
+;;         (paint-top frame)
+;;         (paint-bottom frame)))))
+
+(define (below painter1 painter2)
+  (rotate270 (beside
+              (rotate90 painter1)
+              (rotate90 painter2))))
