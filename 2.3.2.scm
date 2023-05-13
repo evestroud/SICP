@@ -27,10 +27,12 @@
                  (make-exponentiation (base exp) (- (exponent exp) 1)))
                 (deriv (base exp) var))))
              (error "derivative of variable exponentiation not implemented")))
-        (else (error "unknown expression
-                      type: DERIV" exp))))
+        (else (error "unknown expression type: DERIV" exp))))
 
-(define (variable? x) (symbol? x))
+(define (variable? x)
+  (and (symbol? x) (not (or (eq? '+ x)
+                            (eq? '* x)
+                            (eq? '** x)))))
 
 (define (same-variable? v1 v2)
   (and (variable? v1)
@@ -40,17 +42,36 @@
 (define (=number? exp num)
   (and (number? exp) (= exp num)))
 
+(define (expression? x)
+  (or (variable? x)
+      (number? x)
+      (sum? x)
+      (product? x)
+      (exponentiation? x)))
+
+(define (expression-list? x)
+  (and (list? x) (expression? (car x))))
+
 (define (make-sum a1 a2)
   (cond ((=number? a1 0) a2)
         ((=number? a2 0) a1)
         ((and (number? a1) (number? a2))
          (+ a1 a2))
+                                        ; Exercise 2.57
+        ((sum? a2) (append (list '+ a1)
+                           (augend a2)))
+        ((expression-list? a2) (append (list '+ a1) a2))
         (else (list '+ a1 a2))))
 
 (define (sum? x)
   (and (pair? x) (eq? (car x) '+)))
 (define (addend s) (cadr s))
-(define (augend s) (caddr s))
+(define (augend s)
+                                        ; Exercise 2.57
+  (if (and (expression-list? (cddr s))
+           (> (length (cddr s)) 1))
+      (make-sum (caddr s) (cdddr s))
+      (caddr s)))
 
 (define (make-product m1 m2)
   (cond ((or (=number? m1 0)
@@ -60,12 +81,21 @@
         ((=number? m2 1) m1)
         ((and (number? m1) (number? m2))
          (* m1 m2))
+                                        ; Exercise 2.57
+        ((product? m2) (append (list '* m1)
+                               (multiplicand m2)))
+        ((expression-list? m2) (append (list '* m1) m2))
         (else (list '* m1 m2))))
 
 (define (product? x)
   (and (pair? x) (eq? (car x) '*)))
 (define (multiplier p) (cadr p))
-(define (multiplicand p) (caddr p))
+(define (multiplicand p)
+                                        ; Exercise 2.57
+  (if (and (expression-list? (cddr p))
+           (> (length (cddr p)) 1))
+      (make-product (caddr p) (cdddr p))
+      (caddr p)))
 
 
 ;; Exercise 2.56
