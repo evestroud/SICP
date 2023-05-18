@@ -52,50 +52,50 @@
 (define (expression-list? x)
   (and (list? x) (expression? (car x))))
 
-(define (make-sum a1 a2)
-  (cond ((=number? a1 0) a2)
-        ((=number? a2 0) a1)
-        ((and (number? a1) (number? a2))
-         (+ a1 a2))
-                                        ; Exercise 2.57
-        ((sum? a2) (append (list '+ a1)
-                           (augend a2)))
-        ((expression-list? a2) (append (list '+ a1) a2))
-        (else (list '+ a1 a2))))
+;; (define (make-sum a1 a2)
+;;   (cond ((=number? a1 0) a2)
+;;         ((=number? a2 0) a1)
+;;         ((and (number? a1) (number? a2))
+;;          (+ a1 a2))
+;;                                         ; Exercise 2.57
+;;         ((sum? a2) (append (list '+ a1)
+;;                            (augend a2)))
+;;         ((expression-list? a2) (append (list '+ a1) a2))
+;;         (else (list '+ a1 a2))))
 
-(define (sum? x)
-  (and (pair? x) (eq? (car x) '+)))
-(define (addend s) (cadr s))
-(define (augend s)
-                                        ; Exercise 2.57
-  (if (and (expression-list? (cddr s))
-           (> (length (cddr s)) 1))
-      (make-sum (caddr s) (cdddr s))
-      (caddr s)))
+;; (define (sum? x)
+;;   (and (pair? x) (eq? (car x) '+)))
+;; (define (addend s) (cadr s))
+;; (define (augend s)
+;;                                         ; Exercise 2.57
+;;   (if (and (expression-list? (cddr s))
+;;            (> (length (cddr s)) 1))
+;;       (make-sum (caddr s) (cdddr s))
+;;       (caddr s)))
 
-(define (make-product m1 m2)
-  (cond ((or (=number? m1 0)
-             (=number? m2 0))
-         0)
-        ((=number? m1 1) m2)
-        ((=number? m2 1) m1)
-        ((and (number? m1) (number? m2))
-         (* m1 m2))
-                                        ; Exercise 2.57
-        ((product? m2) (append (list '* m1)
-                               (multiplicand m2)))
-        ((expression-list? m2) (append (list '* m1) m2))
-        (else (list '* m1 m2))))
+;; (define (make-product m1 m2)
+;;   (cond ((or (=number? m1 0)
+;;              (=number? m2 0))
+;;          0)
+;;         ((=number? m1 1) m2)
+;;         ((=number? m2 1) m1)
+;;         ((and (number? m1) (number? m2))
+;;          (* m1 m2))
+;;                                         ; Exercise 2.57
+;;         ((product? m2) (append (list '* m1)
+;;                                (multiplicand m2)))
+;;         ((expression-list? m2) (append (list '* m1) m2))
+;;         (else (list '* m1 m2))))
 
-(define (product? x)
-  (and (pair? x) (eq? (car x) '*)))
-(define (multiplier p) (cadr p))
-(define (multiplicand p)
-                                        ; Exercise 2.57
-  (if (and (expression-list? (cddr p))
-           (> (length (cddr p)) 1))
-      (make-product (caddr p) (cdddr p))
-      (caddr p)))
+;; (define (product? x)
+;;   (and (pair? x) (eq? (car x) '*)))
+;; (define (multiplier p) (cadr p))
+;; (define (multiplicand p)
+;;                                         ; Exercise 2.57
+;;   (if (and (expression-list? (cddr p))
+;;            (> (length (cddr p)) 1))
+;;       (make-product (caddr p) (cdddr p))
+;;       (caddr p)))
 
 
 ;; Exercise 2.56
@@ -109,3 +109,50 @@
   (cadr x))
 (define (exponent x)
   (caddr x))
+
+
+;; Exercise 2.58
+
+(define (simple-expression? exp)
+  (nil? (cdddr exp)))
+
+(define (make-identity x)
+  (list x '+ 0))
+(define (identity? x)
+  (and (pair? x) (equal? (cdr x) '(+ 0))))
+(define (identified x)
+  (car x))
+
+(define (make-sum s1 s2)
+  (cond
+   ((=number? s1 0) s2)
+   ((=number? s2 0) s1)
+   ((and (number? s1) (number? s2)) (+ s1 s2))
+   (else (list s1 '+ s2))))
+(define (sum? x)
+  (and (pair? x) (eq? (cadr x) '+)))
+(define (addend x)
+  (car x))
+(define (augend x)
+  (if (simple-expression? x)
+      (caddr x)
+      (cddr x)))
+
+(define (make-product m1 m2)
+  (let ((m1-val (if (identity? m1) (identified m1) m1)))
+    (cond
+     ((or (=number? m1 0) (=number? m2 0)) 0)
+     ((=number? m1 1) m2)
+     ((=number? m2 1) m1-val)
+     ((sum? m2) (make-sum
+                 (list m1-val '* (addend m2))
+                 (augend m2)))
+     (else (list m1-val '* m2)))))
+(define (product? x)
+  (and (pair? x) (eq? (cadr x) '*)))
+(define (multiplier x)
+  (car x))
+(define (multiplicand x)
+  (if (simple-expression? x)
+      (make-identity (caddr x)) ; note- janky but seems correct
+      (cddr x)))
