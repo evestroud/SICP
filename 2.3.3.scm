@@ -207,3 +207,13 @@
 (define (union-set-tree t1 t2)
   (let ((l1 (tree->list-1 t1)) (l2 (tree->list-1 t2)))
     (list->tree (union-set l1 l2))))
+
+
+;; Exercise 2.66
+
+(define (lookup val tree)
+  (cond
+   ((null? tree) #f)
+   ((= val (car (entry tree))) (cdr (entry tree)))
+   ((< val (car (entry tree))) (lookup val (left-branch tree)))
+   ((> val (car (entry tree))) (lookup val (right-branch tree)))))
