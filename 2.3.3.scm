@@ -249,20 +249,6 @@
       (weight-leaf tree)
       (cadddr tree)))
 
-(define (print-code-tree tree)
-  (define (helper tree code)
-    (if
-     (leaf? tree)
-     (format #f "~a(~a ~a)\n"
-             (make-string (string-length code) #\x0020)
-             (cadr tree)
-             code)
-     (format #f "~a~a~a"
-             (make-string (* 2 (string-length code)) #\x0020)
-             (helper (left-branch tree) (string-append code "0"))
-             (helper (right-branch tree) (string-append code "1")))))
-  (display (helper tree "")))
-
 
 ; The decoding procedure
 
@@ -324,3 +310,39 @@
   '(0 1 1 0 0 1 0 1 0 1 1 1 0))
 
 ; (A D A B B C A)
+
+
+;; Exercise 2.68
+
+(define (encode message tree)
+  (if (null? message)
+      '()
+      (append
+       (encode-symbol (car message)
+                      tree)
+       (encode (cdr message) tree))))
+
+(define (encode-symbol symbol tree)
+  (define (helper tree)
+    (let ((left (left-branch tree)) (right (right-branch tree)))
+      (cond
+       ((leaf? tree) '())
+       ((memq symbol (symbols left))
+        (cons 0 (encode-symbol symbol left)))
+       ((memq symbol (symbols right))
+        (cons 1 (encode-symbol symbol right))))))
+  (helper tree))
+
+
+;; Exercise 2.69
+
+(define (generate-huffman-tree pairs)
+  (successive-merge
+   (make-leaf-set pairs)))
+
+(define (successive-merge leaves)
+  (if (nil? (cdr leaves))
+      (car leaves)
+      (successive-merge
+       (adjoin-set (make-code-tree (car leaves) (cadr leaves))
+                   (cddr leaves)))))
