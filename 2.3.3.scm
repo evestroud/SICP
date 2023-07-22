@@ -330,7 +330,8 @@
        ((memq symbol (symbols left))
         (cons 0 (encode-symbol symbol left)))
        ((memq symbol (symbols right))
-        (cons 1 (encode-symbol symbol right))))))
+        (cons 1 (encode-symbol symbol right)))
+       (else (error "Symbol not in tree" symbol)))))
   (helper tree))
 
 
@@ -346,3 +347,28 @@
       (successive-merge
        (adjoin-set (make-code-tree (car leaves) (cadr leaves))
                    (cddr leaves)))))
+
+
+;; Exercise 2.70
+
+(define rock-alphabet
+  '((A    2)    (NA  16)
+    (BOOM 1)    (SHA  3)
+    (GET  2)    (YIP  9)
+    (JOB  2)    (WAH  1)))
+
+(define rock-song
+  '(GET A JOB
+    SHA NA NA NA NA NA NA NA NA
+
+    GET A JOB
+    SHA NA NA NA NA NA NA NA NA
+
+    WAH YIP YIP YIP YIP
+    YIP YIP YIP YIP YIP
+    SHA BOOM))
+
+(define rock-tree
+  (generate-huffman-tree rock-alphabet))
+
+(define rock-code (encode rock-song rock-tree))
