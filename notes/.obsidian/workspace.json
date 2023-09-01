@@ -1,0 +1,185 @@
+{
+  "main": {
+    "id": "7b1ec68f8bc76293",
+    "type": "split",
+    "children": [
+      {
+        "id": "8157b74bde35940d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "56256a2d27cd4057",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {}
+            }
+          },
+          {
+            "id": "1408ead5b47ec0b1",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Chapter 2/2.4 Multiple Representations for Abstract Data.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ],
+        "currentTab": 1
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "8798f72a06b0908e",
+    "type": "split",
+    "children": [
+      {
+        "id": "bd53a2a9bc9a2b07",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "96d83e0a9db5689d",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "53e3d2ead9d6f069",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "c440f25a2795b769",
+            "type": "leaf",
+            "state": {
+              "type": "starred",
+              "state": {}
+            }
+          },
+          {
+            "id": "e82e3db30cf8490e",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "9035eb852e6221ca",
+    "type": "split",
+    "children": [
+      {
+        "id": "534138e52411624b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "09929cbe8f16beee",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Chapter 2/2.4 Multiple Representations for Abstract Data.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "9d13f49ecfce7ae2",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Chapter 2/2.4 Multiple Representations for Abstract Data.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "baf4c1f52daaa061",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "bbd12b24bded0484",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Chapter 2/2.4 Multiple Representations for Abstract Data.md"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "1408ead5b47ec0b1",
+  "lastOpenFiles": [
+    "SICP/Chapter 2/2.3 Symbolic Data.md",
+    "SICP/Chapter 2/2.4 Multiple Representations for Abstract Data.md",
+    "WASM.md",
+    "SICP/Chapter 2/2.2.md",
+    "WASM-term/Using worker as thread for IO.md",
+    "WASM-term",
+    "Scheme interpreter/organizing built-in functionality.md",
+    "SICP/Chapter 2/2.1.md",
+    "Scheme interpreter/rewrite.md",
+    "Scheme interpreter/cdr-coding speculation.md",
+    "Scheme interpreter/big picture.md",
+    "Scheme interpreter/Sussman programming should be fun.md",
+    "Scheme interpreter/memory.md",
+    "SICP/chapter 1/1.2.md",
+    "SICP/Chapter 2/2.0.md",
+    "SICP/chapter 1/1.3.md"
+  ]
+}
