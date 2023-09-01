@@ -231,3 +231,44 @@
             "No method for these types:
              APPLY-GENERIC"
             (list op type-tags))))))
+
+
+;; Exercise 2.73
+
+(define (deriv exp var)
+   (cond ((number? exp) 0)
+         ((variable? exp)
+           (if (same-variable? exp var)
+               1
+               0))
+         (else ((get 'deriv (operator exp))
+                (operands exp)
+                var))))
+
+(define (operator exp) (car exp))
+(define (operands exp) (cdr exp))
+
+;; TODO wip
+(define (install-sum-package)
+  ;; internal procedures
+  (define (make-sum a1 a2)
+    (cond ((=number? a1 0) a2)
+          ((=number? a2 0) a1)
+          ((and (number? a1) (number? a2))
+           (+ a1 a2))
+          ((sum? a2) (append (list '+ a1)
+                             (augend a2)))
+          ((expression-list? a2) (append (list '+ a1) a2))
+          (else (list '+ a1 a2))))
+  (define (addend s) (cadr s))
+  (define (augend s))
+
+  ;; interface to the rest of the system
+  (define (tag x) (attach-tag 'sum x))
+  (define (deriv-sum operands)
+    (let ((x (addend operands var))
+          (y (augend operands)))
+      (make-sum (deriv x var)
+                (deriv y var))))
+  (put 'deriv '(sum) )
+  'done)
