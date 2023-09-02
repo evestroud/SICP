@@ -235,10 +235,27 @@
 
 ;; Exercise 2.73
 
+(use-modules (srfi srfi-1))
+(define operator-table (make-hash-table))
+(define (get op type)
+  (hash-ref
+   (hash-ref operator-table op)
+   type))
+(define (put op type value)
+  (let ((type-table (hash-ref operator-table op)))
+    (if type-table
+        (hash-set!
+         (hash-ref operator-table op)
+         type
+         value)
+        ((let ((new-type-table (make-hash-table)))
+           (hash-set! new-type-table type value)
+           (hash-set! operator-table op new-type-table))))))
+
 (define (deriv exp var)
    (cond ((number? exp) 0)
          ((variable? exp)
-           (if (same-variable? exp var)
+           (if (eq? exp var)
                1
                0))
          (else ((get 'deriv (operator exp))
@@ -248,27 +265,77 @@
 (define (operator exp) (car exp))
 (define (operands exp) (cdr exp))
 
-;; TODO wip
+; 2.73.2
 (define (install-sum-package)
   ;; internal procedures
+  (define (addend s) (car s))
+  (define (augend s) (cadr s))
   (define (make-sum a1 a2)
     (cond ((=number? a1 0) a2)
           ((=number? a2 0) a1)
-          ((and (number? a1) (number? a2))
-           (+ a1 a2))
-          ((sum? a2) (append (list '+ a1)
-                             (augend a2)))
-          ((expression-list? a2) (append (list '+ a1) a2))
+          ((and (number? a1) (number? a2)) (+ a1 a2))
           (else (list '+ a1 a2))))
-  (define (addend s) (cadr s))
-  (define (augend s))
 
   ;; interface to the rest of the system
-  (define (tag x) (attach-tag 'sum x))
-  (define (deriv-sum operands)
-    (let ((x (addend operands var))
+  (define (deriv-sum operands var)
+    (let ((x (addend operands))
           (y (augend operands)))
       (make-sum (deriv x var)
                 (deriv y var))))
-  (put 'deriv '(sum) )
+  (put 'deriv '+ deriv-sum)
+  (put 'make '+ make-sum)
+  'done)
+
+(define (install-product-package)
+  ;; internal procedures
+  (define (multiplier s) (car s))
+  (define (multiplicand s) (cadr s))
+  (define (make-product m1 m2)
+    (cond ((or (=number? m1 0)
+               (=number? m2 0))
+           0)
+          ((=number? m1 1) m2)
+          ((=number? m2 1) m1)
+          ((and (number? m1) (number? m2))
+           (* m1 m2))
+          (else (list '* m1 m2))))
+
+  ;; interface to the rest of the system
+  (define (deriv-product operands var)
+    (let ((x (multiplier operands))
+          (y (multiplicand operands)))
+      (make-product (deriv x var)
+                    (deriv y var))))
+  (put 'deriv '* deriv-product)
+  (put 'make '* make-product)
+  'done)
+
+; 2.73.3
+(define (install-exponent-package)
+  ;; internal procedures
+
+  (define (base x)
+    (cadr x))
+  (define (exponent x)
+    (caddr x))
+  (define (make-exponentiation base exponent)
+    (list '** base exponent))
+
+  ;; interface to the rest of the system
+  (define (deriv-exponent operands var)
+    (let ((x (base operands))
+          (y (exponent operands)))
+      (if (number? y)
+             (cond
+              ((eq? y 0) 1)
+              ((eq? y 1) x)
+              (else
+               ((get 'make '*)
+                ((get 'make '*)
+                 y
+                 (make-exponentiation x (- y 1)))
+                (deriv x var))))
+             (error "derivative of variable exponentiation not implemented"))))
+  (put 'deriv '* deriv-exponent)
+  (put 'make '** make-exponentiation)
   'done)
