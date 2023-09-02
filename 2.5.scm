@@ -175,8 +175,8 @@
     ((get 'real-part (list (type-tag n))) (contents n)))
   (define (imag-part n)
     ((get 'imag-part (list (type-tag n))) (contents n)))
-  (define (magitude n)
-    ((get 'magitude (list (type-tag n))) (contents n)))
+  (define (magnitude n)
+    ((get 'magnitude (list (type-tag n))) (contents n)))
   (define (angle n)
     ((get 'angle (list (type-tag n))) (contents n)))
   ;; internal procedures
@@ -216,6 +216,11 @@
   (put 'make-from-mag-ang 'complex
        (lambda (r a)
          (tag (make-from-mag-ang r a))))
+  ; Exercise 2.77
+  (put 'real-part '(complex) real-part)
+  (put 'imag-part '(complex) imag-part)
+  (put 'magnitude '(complex) magnitude)
+  (put 'angle '(complex) angle)
   'done)
 
 (install-complex-package)
@@ -223,3 +228,12 @@
   ((get 'make-from-real-imag 'complex) x y))
 (define (make-complex-from-mag-ang r a)
   ((get 'make-from-mag-ang 'complex) r a))
+; Exercise 2.77
+(define (real-part n)
+  ((get 'real-part (list (type-tag n))) (contents n)))
+(define (imag-part n)
+  ((get 'imag-part (list (type-tag n))) (contents n)))
+(define (magnitude n)
+  ((get 'magnitude (list (type-tag n))) (contents n)))
+(define (angle n)
+  ((get 'angle (list (type-tag n))) (contents n)))
