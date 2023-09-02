@@ -235,22 +235,18 @@
 
 ;; Exercise 2.73
 
-(use-modules (srfi srfi-1))
-(define operator-table (make-hash-table))
-(define (get op type)
-  (hash-ref
-   (hash-ref operator-table op)
-   type))
-(define (put op type value)
-  (let ((type-table (hash-ref operator-table op)))
-    (if type-table
-        (hash-set!
-         (hash-ref operator-table op)
-         type
-         value)
-        ((let ((new-type-table (make-hash-table)))
-           (hash-set! new-type-table type value)
-           (hash-set! operator-table op new-type-table))))))
+(define (variable? x)
+  (and (symbol? x) (not (or (eq? '+ x)
+                            (eq? '* x)
+                            (eq? '** x)))))
+
+(define (same-variable? v1 v2)
+  (and (variable? v1)
+       (variable? v2)
+       (eq? v1 v2)))
+
+(define (=number? exp num)
+  (and (number? exp) (= exp num)))
 
 (define (deriv exp var)
    (cond ((number? exp) 0)
@@ -304,8 +300,9 @@
   (define (deriv-product operands var)
     (let ((x (multiplier operands))
           (y (multiplicand operands)))
-      (make-product (deriv x var)
-                    (deriv y var))))
+      ((get 'make '+)
+       (make-product (deriv x var) y)
+       (make-product x (deriv y var)))))
   (put 'deriv '* deriv-product)
   (put 'make '* make-product)
   'done)
@@ -315,11 +312,14 @@
   ;; internal procedures
 
   (define (base x)
-    (cadr x))
+    (car x))
   (define (exponent x)
-    (caddr x))
+    (cadr x))
   (define (make-exponentiation base exponent)
-    (list '** base exponent))
+    (cond
+     ((=number? exponent 0) 1)
+     ((=number? exponent 1) base)
+     (else (list '** base exponent))))
 
   ;; interface to the rest of the system
   (define (deriv-exponent operands var)
@@ -327,8 +327,8 @@
           (y (exponent operands)))
       (if (number? y)
              (cond
-              ((eq? y 0) 1)
-              ((eq? y 1) x)
+              ((=number? y 0) 1)
+              ((=number? y 1) x)
               (else
                ((get 'make '*)
                 ((get 'make '*)
@@ -336,6 +336,54 @@
                  (make-exponentiation x (- y 1)))
                 (deriv x var))))
              (error "derivative of variable exponentiation not implemented"))))
-  (put 'deriv '* deriv-exponent)
+  (put 'deriv '** deriv-exponent)
   (put 'make '** make-exponentiation)
   'done)
+
+(use-modules (srfi srfi-1))
+(define operator-table (make-hash-table))
+(define (get op type)
+  (hash-ref
+   (hash-ref operator-table op)
+   type))
+(define (put op type value)
+  (let ((type-table (hash-ref operator-table op (make-hash-table))))
+    (hash-set!
+     type-table
+     type
+     value)
+    (hash-set! operator-table op type-table)))
+(define (view-operator-table)
+  (display (hash-map->list
+            (lambda (x y)
+              (format #f
+                      "~a:\n~a\n"
+                      x
+                      (hash-map->list
+                       (lambda (xx yy)
+                         (format #f "  ~a: ~a\n" xx yy))
+                       y)))
+            operator-table)))
+
+(install-sum-package)
+(install-product-package)
+(install-exponent-package)
+
+
+;; Exercise 2.74
+; 2.74.1
+(define (get-record employee-id division)
+  (get 'employee-record division) employee-id)
+; 2.74.2
+(define (get-salary employee-id division)
+  (get 'salary division) (get-record employee-id division))
+; 2.74.3
+(define (find-employee-record employee-id all-divisions)
+  (fold
+   (lambda (found-employee? previous)
+     (or found-employee? previous))
+   #f
+   (map
+    (lambda (division)
+      ((get 'employee-record division) employee-id))
+    all-divisions)))
