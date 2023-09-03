@@ -1,16 +1,21 @@
 ;; Tag operations
+                                        ; Exercise 2.78
 (define (attach-tag type-tag contents)
-  (cons type-tag contents))
+  (if (number? contents)
+      contents
+      (cons type-tag contents)))
+
 (define (type-tag datum)
-  (if (pair? datum)
-      (car datum)
-      (error "Bad tagged datum:
-              TYPE-TAG" datum)))
+  (cond ((pair? datum) (car datum))
+        ((number? datum) 'scheme-number)
+        (else (error "Bad tagged datum:
+              TYPE-TAG" datum))))
+
 (define (contents datum)
-  (if (pair? datum)
-      (cdr datum)
-      (error "Bad tagged datum:
-              CONTENTS" datum)))
+  (cond ((pair? datum) (cdr datum))
+        ((number? datum) datum)
+        (else (error "Bad tagged datum:
+              CONTENTS" datum))))
 
 
 ;; Generic operations
@@ -20,9 +25,9 @@
       (if proc
           (apply proc (map contents args))
           (error
-            "No method for these types:
+           "No method for these types:
              APPLY-GENERIC"
-            (list op type-tags))))))
+           (list op type-tags))))))
 
 
 ;; Generic Arithmetic
@@ -30,6 +35,10 @@
 (define (sub x y) (apply-generic 'sub x y))
 (define (mul x y) (apply-generic 'mul x y))
 (define (div x y) (apply-generic 'div x y))
+                                        ; Exercise 2.79
+(define (equ? x y) (apply-generic 'equ? x y))
+                                        ; Exercise 2.80
+(define (=zero? n) (apply-generic '=zero? n))
 
 
 ;; Operations and types table
@@ -60,6 +69,10 @@
        (lambda (x y) (tag (/ x y))))
   (put 'make 'scheme-number
        (lambda (x) (tag x)))
+                                        ; Exercise 2.79
+  (put 'equ? '(scheme-number scheme-number) =)
+                                        ; Exercise 2.80
+  (put '=zero? '(scheme-number) (lambda (n) (= n 0)))
   'done)
 
 (install-scheme-number-package)
@@ -71,8 +84,10 @@
   (define (numer x) (car x))
   (define (denom x) (cdr x))
   (define (make-rat n d)
-    (let ((g (gcd n d)))
-      (cons (/ n g) (/ d g))))
+    (if (=zero? d)
+        (error "Cannot make a rational number with a denominator of 0")
+        (let ((g (gcd n d)))
+          (cons (/ n g) (/ d g)))))
   (define (add-rat x y)
     (make-rat (+ (* (numer x) (denom y))
                  (* (numer y) (denom x)))
@@ -87,6 +102,13 @@
   (define (div-rat x y)
     (make-rat (* (numer x) (denom y))
               (* (denom x) (numer y))))
+                                        ; Exercise 2.79
+  (define (equ?-rat x y)
+    (and (= (numer x) (numer y))
+         (= (denom y) (denom y))))
+                                        ; Exercise 2.80
+  (define (=zero?-rat n)
+    (= 0 (numer n)))
   ;; interface to rest of the system
   (define (tag x) (attach-tag 'rational x))
   (put 'add '(rational rational)
@@ -99,6 +121,10 @@
        (lambda (x y) (tag (div-rat x y))))
   (put 'make 'rational
        (lambda (n d) (tag (make-rat n d))))
+                                        ; Exercise 2.79
+  (put 'equ? '(rational rational) equ?-rat)
+                                        ; Exercise 2.80
+  (put '=zero? '(rational) =zero?-rat)
   'done)
 
 (install-rational-package)
@@ -121,6 +147,14 @@
       (atan (imag-part z) (real-part z)))
     (define (make-from-mag-ang r a)
       (cons (* r (cos a)) (* r (sin a))))
+                                        ; Exercise 2.79
+    (define (equ?-rectangular x y)
+      (and (= (real-part x) (real-part y))
+           (= (imag-part x) (imag-part y))))
+                                        ; Exercise 2.80
+    (define (=zero?-rectangular n)
+      (and (= 0 (real-part n))
+           (= 0 (imag-part n))))
     ;; interface to the rest of the system
     (define (tag x)
       (attach-tag 'rectangular x))
@@ -134,6 +168,10 @@
     (put 'make-from-mag-ang 'rectangular
          (lambda (r a)
            (tag (make-from-mag-ang r a))))
+                                        ; Exercise 2.79
+    (put 'equ? '(rectangular rectangular) equ?-rectangular)
+                                        ; Exercise 2.80
+    (put '=zero? '(rectangular) =zero?-rectangular)
     'done)
 
   (define (install-polar-package)
@@ -148,6 +186,13 @@
     (define (make-from-real-imag x y)
       (cons (sqrt (+ (expt x 2) (expt y 2)))
             (atan y x)))
+                                        ; Exercise 2.79
+    (define (equ?-polar x y)
+      (and (= (magnitude x) (magnitude y))
+           (= (angle x) (angle y))))
+                                        ; Exercise 2.80
+    (define (=zero?-polar n)
+      (= 0 (magnitude n)))
     ;; interface to the rest of the system
     (define (tag x) (attach-tag 'polar x))
     (put 'real-part '(polar) real-part)
@@ -160,6 +205,10 @@
     (put 'make-from-mag-ang 'polar
          (lambda (r a)
            (tag (make-from-mag-ang r a))))
+                                        ; Exercise 2.79
+    (put 'equ? '(polar polar) equ?-polar)
+                                        ; Exercise 2.80
+    (put '=zero? '(polar) =zero?-polar)
     'done)
 
   (install-rectangular-package)
@@ -179,6 +228,12 @@
     ((get 'magnitude (list (type-tag n))) (contents n)))
   (define (angle n)
     ((get 'angle (list (type-tag n))) (contents n)))
+                                        ; Exercise 2.79
+  (define (equ?-complex x y)
+    (equ? x y))
+                                        ; Exercise 2.80
+  (define (=zero?-complex n)
+    (=zero? n))
   ;; internal procedures
   (define (add-complex z1 z2)
     (make-from-real-imag
@@ -216,11 +271,15 @@
   (put 'make-from-mag-ang 'complex
        (lambda (r a)
          (tag (make-from-mag-ang r a))))
-  ; Exercise 2.77
+                                        ; Exercise 2.77
   (put 'real-part '(complex) real-part)
   (put 'imag-part '(complex) imag-part)
   (put 'magnitude '(complex) magnitude)
   (put 'angle '(complex) angle)
+                                        ; Exercise 2.79
+  (put 'equ? '(complex complex) equ?-complex)
+                                        ; Exercise 2.80
+  (put '=zero? '(complex) =zero?-complex)
   'done)
 
 (install-complex-package)
@@ -228,7 +287,7 @@
   ((get 'make-from-real-imag 'complex) x y))
 (define (make-complex-from-mag-ang r a)
   ((get 'make-from-mag-ang 'complex) r a))
-; Exercise 2.77
+                                        ; Exercise 2.77
 (define (real-part n)
   ((get 'real-part (list (type-tag n))) (contents n)))
 (define (imag-part n)
