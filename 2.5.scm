@@ -296,3 +296,62 @@
   ((get 'magnitude (list (type-tag n))) (contents n)))
 (define (angle n)
   ((get 'angle (list (type-tag n))) (contents n)))
+
+
+;; Coercion
+
+; Coercion table
+(define coercion-table (make-hash-table))
+(define (get-coercion type1 type2)
+  (hash-ref
+   (hash-ref coercion-table type2)
+   type1))
+(define (put-coercion type1 type2 value)
+  (let ((type-table (hash-ref coercion-table type1 (make-hash-table))))
+    (hash-set!
+     type-table
+     type2
+     value)
+    (hash-set! coercion-table type1 type-table)))
+
+(define (apply-generic op . args)
+  (let ((type-tags (map type-tag args)))
+    (let ((proc (get op type-tags)))
+      (if proc
+          (apply proc (map contents args))
+          (if (= (length args) 2)
+              (let ((type1 (car type-tags))
+                    (type2 (cadr type-tags))
+                    (a1 (car args))
+                    (a2 (cadr args)))
+                (let ((t1->t2
+                       (get-coercion type1
+                                     type2))
+                      (t2->t1
+                       (get-coercion type2
+                                     type1)))
+                  (cond (t1->t2
+                         (apply-generic
+                          op (t1->t2 a1) a2))
+                        (t2->t1
+                         (apply-generic
+                          op a1 (t2->t1 a2)))
+                        (else
+                         (error
+                          "No method for
+                           these types"
+                          (list
+                           op
+                           type-tags))))))
+              (error
+               "No method for these types"
+               (list op type-tags)))))))
+
+; Coercion operations
+
+(define (scheme-number->complex n)
+  (make-complex-from-real-imag
+   (contents n) 0))
+
+(put-coercion 'scheme-number 'complex
+              scheme-number->complex)
