@@ -19,15 +19,15 @@
 
 
 ;; Generic operations
-(define (apply-generic op . args)
-  (let ((type-tags (map type-tag args)))
-    (let ((proc (get op type-tags)))
-      (if proc
-          (apply proc (map contents args))
-          (error
-           "No method for these types:
-             APPLY-GENERIC"
-           (list op type-tags))))))
+;; (define (apply-generic op . args)
+;;   (let ((type-tags (map type-tag args)))
+;;     (let ((proc (get op type-tags)))
+;;       (if proc
+;;           (apply proc (map contents args))
+;;           (error
+;;            "No method for these types:
+;;              APPLY-GENERIC"
+;;            (list op type-tags))))))
 
 
 ;; Generic Arithmetic
@@ -303,9 +303,12 @@
 ; Coercion table
 (define coercion-table (make-hash-table))
 (define (get-coercion type1 type2)
-  (hash-ref
-   (hash-ref coercion-table type2)
-   type1))
+  (let ((coercions-for-type (hash-ref coercion-table type1)))
+    (if coercions-for-type
+        (hash-ref
+         coercions-for-type
+         type2)
+        #f)))
 (define (put-coercion type1 type2 value)
   (let ((type-table (hash-ref coercion-table type1 (make-hash-table))))
     (hash-set!
@@ -338,8 +341,7 @@
                           op a1 (t2->t1 a2)))
                         (else
                          (error
-                          "No method for
-                           these types"
+                          "No method for these types"
                           (list
                            op
                            type-tags))))))
