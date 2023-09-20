@@ -73,6 +73,11 @@
   (put 'equ? '(scheme-number scheme-number) =)
                                         ; Exercise 2.80
   (put '=zero? '(scheme-number) (lambda (n) (= n 0)))
+                                        ; Exercise 2.81
+  (put 'exp
+       '(scheme-number scheme-number)
+       (lambda (x y)
+         (tag (expt x y))))
   'done)
 
 (install-scheme-number-package)
@@ -301,14 +306,18 @@
 ;; Coercion
 
 ; Coercion table
+
 (define coercion-table (make-hash-table))
 (define (get-coercion type1 type2)
-  (let ((coercions-for-type (hash-ref coercion-table type1)))
-    (if coercions-for-type
-        (hash-ref
-         coercions-for-type
-         type2)
-        #f)))
+                                        ; Exercise 2.81
+  (if (eq? type1 type2)
+      #f
+      (let ((coercions-for-type (hash-ref coercion-table type1)))
+        (if coercions-for-type
+            (hash-ref
+             coercions-for-type
+             type2)
+            #f))))
 (define (put-coercion type1 type2 value)
   (let ((type-table (hash-ref coercion-table type1 (make-hash-table))))
     (hash-set!
@@ -357,3 +366,18 @@
 
 (put-coercion 'scheme-number 'complex
               scheme-number->complex)
+
+
+;; Exercise 2.81
+
+(define (scheme-number->scheme-number n) n)
+(define (complex->complex z) z)
+
+(put-coercion 'scheme-number 'scheme-number
+              scheme-number->scheme-number)
+
+(put-coercion 'complex 'complex
+              complex->complex)
+
+(define (exp x y)
+  (apply-generic 'exp x y))
