@@ -336,70 +336,70 @@
      value)
     (hash-set! coercion-table type1 type-table)))
 
-(define (apply-generic op . args)
-  (let ((type-tags (map type-tag args)))
-    (let ((proc (get op type-tags)))
-      (if proc
-          (apply proc (map contents args))
-          (cond
-           ((= (length args) 2)
-            (let ((type1 (car type-tags))
-                  (type2 (cadr type-tags))
-                  (a1 (car args))
-                  (a2 (cadr args)))
-              (let ((t1->t2
-                     (get-coercion type1
-                                   type2))
-                    (t2->t1
-                     (get-coercion type2
-                                   type1)))
-                (cond (t1->t2
-                       (apply-generic
-                        op (t1->t2 a1) a2))
-                      (t2->t1
-                       (apply-generic
-                        op a1 (t2->t1 a2)))
-                      (else
-                       (error
-                        "No method for these types"
-                        (list
-                         op
-                         type-tags)))))))
-                                        ; Exercise 2.82
-           ((> (length args) 2)
-            (let* ((types (delete-duplicates type-tags))
-                   (coercions (fold
-                               (lambda (type1 return)
-                                 (display (format #f "~a ~a\n" type1 return))
-                                 (if (every (lambda (x) x) return)
-                                     return
-                                     (map
-                                      (lambda (type2)
-                                        (if (eq? type1 type2)
-                                            (lambda (x) x)
-                                            (get-coercion type2 type1)))
-                                      type-tags)))
-                               (list #f)
-                               types)))
-              (display coercions) (newline)
-              (if (every (lambda (x) x) coercions)
-                  (let ((coerced (map
-                                  (lambda (arg coerce)
-                                    (coerce arg))
-                                  args
-                                  coercions)))
-                    (display coerced) (newline)
-                    (fold
-                     (lambda (a2 a1)
-                       (apply-generic op a1 a2))
-                     (car coerced)
-                     (cdr coerced)))
-                  (error
-                  "No method for these types"
-                  (list op type-tags)))))
-           (else (error
-                  "No method for these types"
-                  (list op type-tags))))))))
+;; (define (apply-generic op . args)
+;;   (let ((type-tags (map type-tag args)))
+;;     (let ((proc (get op type-tags)))
+;;       (if proc
+;;           (apply proc (map contents args))
+;;           (cond
+;;            ((= (length args) 2)
+;;             (let ((type1 (car type-tags))
+;;                   (type2 (cadr type-tags))
+;;                   (a1 (car args))
+;;                   (a2 (cadr args)))
+;;               (let ((t1->t2
+;;                      (get-coercion type1
+;;                                    type2))
+;;                     (t2->t1
+;;                      (get-coercion type2
+;;                                    type1)))
+;;                 (cond (t1->t2
+;;                        (apply-generic
+;;                         op (t1->t2 a1) a2))
+;;                       (t2->t1
+;;                        (apply-generic
+;;                         op a1 (t2->t1 a2)))
+;;                       (else
+;;                        (error
+;;                         "No method for these types"
+;;                         (list
+;;                          op
+;;                          type-tags)))))))
+;;                                         ; Exercise 2.82
+;;            ((> (length args) 2)
+;;             (let* ((types (delete-duplicates type-tags))
+;;                    (coercions (fold
+;;                                (lambda (type1 return)
+;;                                  (display (format #f "~a ~a\n" type1 return))
+;;                                  (if (every (lambda (x) x) return)
+;;                                      return
+;;                                      (map
+;;                                       (lambda (type2)
+;;                                         (if (eq? type1 type2)
+;;                                             (lambda (x) x)
+;;                                             (get-coercion type2 type1)))
+;;                                       type-tags)))
+;;                                (list #f)
+;;                                types)))
+;;               (display coercions) (newline)
+;;               (if (every (lambda (x) x) coercions)
+;;                   (let ((coerced (map
+;;                                   (lambda (arg coerce)
+;;                                     (coerce arg))
+;;                                   args
+;;                                   coercions)))
+;;                     (display coerced) (newline)
+;;                     (fold
+;;                      (lambda (a2 a1)
+;;                        (apply-generic op a1 a2))
+;;                      (car coerced)
+;;                      (cdr coerced)))
+;;                   (error
+;;                   "No method for these types"
+;;                   (list op type-tags)))))
+;;            (else (error
+;;                   "No method for these types"
+;;                   (list op type-tags))))))))
 
 ; Coercion operations
 
@@ -439,3 +439,37 @@
 
 (put-coercion 'rational 'complex
               (lambda (n) (make-complex-from-real-imag n 0)))
+
+
+;; Exercise 2.84
+
+(define tower
+  '(complex
+    rational
+    scheme-number))
+
+(define (get-height type)
+  (list-index
+   (lambda (elem) (eq? elem type))
+   tower))
+
+(define (raise-to-height value target)
+  (let* ((type (type-tag value))
+         (height (get-height type)))
+    (cond
+     ((= height target) value)
+     ((> target height) (error "Invalid raise" (list height target)))
+     (else (raise-to-height (raise value) target)))))
+
+(define (apply-generic op . args)
+  (let* ((type-tags (map type-tag args))
+         (proc (get op type-tags)))
+    (if proc
+        (apply proc (map contents args))
+        (let* ((heights (map get-height type-tags))
+               (target (apply min heights))
+               (raised-args (map
+                             (lambda (arg)
+                               (raise-to-height arg target))
+                             args)))
+          (apply apply-generic (cons op raised-args))))))
