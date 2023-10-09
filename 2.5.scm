@@ -1,3 +1,5 @@
+(use-modules (srfi srfi-1))
+
 ;; Tag operations
                                         ; Exercise 2.78
 (define (attach-tag type-tag contents)
@@ -31,10 +33,10 @@
 
 
 ;; Generic Arithmetic
-(define (add x y) (apply-generic 'add x y))
-(define (sub x y) (apply-generic 'sub x y))
-(define (mul x y) (apply-generic 'mul x y))
-(define (div x y) (apply-generic 'div x y))
+(define (add . args) (apply apply-generic (cons 'add args)))
+(define (sub . args) (apply apply-generic (cons 'sub args)))
+(define (mul . args) (apply apply-generic (cons 'mul args)))
+(define (div . args) (apply apply-generic (cons 'div args)))
                                         ; Exercise 2.79
 (define (equ? x y) (apply-generic 'equ? x y))
                                         ; Exercise 2.80
@@ -78,6 +80,10 @@
        '(scheme-number scheme-number)
        (lambda (x y)
          (tag (expt x y))))
+                                        ; Exercise 2.83
+  (put 'raise 'scheme-number
+       (lambda (x)
+         ((get-coercion 'scheme-number 'rational) x)))
   'done)
 
 (install-scheme-number-package)
@@ -130,6 +136,10 @@
   (put 'equ? '(rational rational) equ?-rat)
                                         ; Exercise 2.80
   (put '=zero? '(rational) =zero?-rat)
+                                        ; Exercise 2.83
+  (put 'raise 'rational
+       (lambda (x)
+         ((get-coercion 'rational 'complex) x)))
   'done)
 
 (install-rational-package)
@@ -331,32 +341,65 @@
     (let ((proc (get op type-tags)))
       (if proc
           (apply proc (map contents args))
-          (if (= (length args) 2)
-              (let ((type1 (car type-tags))
-                    (type2 (cadr type-tags))
-                    (a1 (car args))
-                    (a2 (cadr args)))
-                (let ((t1->t2
-                       (get-coercion type1
-                                     type2))
+          (cond
+           ((= (length args) 2)
+            (let ((type1 (car type-tags))
+                  (type2 (cadr type-tags))
+                  (a1 (car args))
+                  (a2 (cadr args)))
+              (let ((t1->t2
+                     (get-coercion type1
+                                   type2))
+                    (t2->t1
+                     (get-coercion type2
+                                   type1)))
+                (cond (t1->t2
+                       (apply-generic
+                        op (t1->t2 a1) a2))
                       (t2->t1
-                       (get-coercion type2
-                                     type1)))
-                  (cond (t1->t2
-                         (apply-generic
-                          op (t1->t2 a1) a2))
-                        (t2->t1
-                         (apply-generic
-                          op a1 (t2->t1 a2)))
-                        (else
-                         (error
-                          "No method for these types"
-                          (list
-                           op
-                           type-tags))))))
-              (error
-               "No method for these types"
-               (list op type-tags)))))))
+                       (apply-generic
+                        op a1 (t2->t1 a2)))
+                      (else
+                       (error
+                        "No method for these types"
+                        (list
+                         op
+                         type-tags)))))))
+                                        ; Exercise 2.82
+           ((> (length args) 2)
+            (let* ((types (delete-duplicates type-tags))
+                   (coercions (fold
+                               (lambda (type1 return)
+                                 (display (format #f "~a ~a\n" type1 return))
+                                 (if (every (lambda (x) x) return)
+                                     return
+                                     (map
+                                      (lambda (type2)
+                                        (if (eq? type1 type2)
+                                            (lambda (x) x)
+                                            (get-coercion type2 type1)))
+                                      type-tags)))
+                               (list #f)
+                               types)))
+              (display coercions) (newline)
+              (if (every (lambda (x) x) coercions)
+                  (let ((coerced (map
+                                  (lambda (arg coerce)
+                                    (coerce arg))
+                                  args
+                                  coercions)))
+                    (display coerced) (newline)
+                    (fold
+                     (lambda (a2 a1)
+                       (apply-generic op a1 a2))
+                     (car coerced)
+                     (cdr coerced)))
+                  (error
+                  "No method for these types"
+                  (list op type-tags)))))
+           (else (error
+                  "No method for these types"
+                  (list op type-tags))))))))
 
 ; Coercion operations
 
@@ -381,3 +424,18 @@
 
 (define (exp x y)
   (apply-generic 'exp x y))
+
+
+;; Exercise 2.83
+
+(define (raise n)
+  (let ((coerce (get 'raise (type-tag n))))
+    (if coerce
+        (coerce n)
+        #f)))
+
+(put-coercion 'scheme-number 'rational
+              (lambda (n) (make-rational n 1)))
+
+(put-coercion 'rational 'complex
+              (lambda (n) (make-complex-from-real-imag n 0)))
