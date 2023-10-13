@@ -491,3 +491,17 @@
          (apply-binary op arg acc))
        (car args)
        (cdr args))))
+
+
+;; Display helpers
+
+(define (auto-format . args)
+  (let ((format-string (string-join (make-list (length args) "~a"))))
+    (apply format (append (list #f format-string) args))))
+
+(define (print . args)
+  (display (apply auto-format args)))
+
+(define (println . args)
+  (apply print args)
+  (newline))
