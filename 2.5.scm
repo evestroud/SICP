@@ -46,9 +46,12 @@
 ;; Operations and types table
 (define operator-and-type-table (make-hash-table))
 (define (get op type)
-  (hash-ref
-   (hash-ref operator-and-type-table op)
-   type))
+  (let ((type-table-for-op (hash-ref operator-and-type-table op)))
+    (if type-table-for-op
+        (hash-ref
+         type-table-for-op
+         type)
+        #f)))
 (define (put op type value)
   (let ((type-table (hash-ref operator-and-type-table op (make-hash-table))))
     (hash-set!
@@ -140,6 +143,13 @@
   (put 'raise 'rational
        (lambda (x)
          ((get-coercion 'rational 'complex) x)))
+                                        ; Exercise 2.85
+  (put 'drop 'rational
+       (lambda (x)
+         (let ((reducible? (= 0 (remainder (numer x) (denom x)))))
+           (if reducible?
+               (/ (numer x) (denom x))
+               (tag x)))))
   'done)
 
 (install-rational-package)
@@ -295,6 +305,13 @@
   (put 'equ? '(complex complex) equ?-complex)
                                         ; Exercise 2.80
   (put '=zero? '(complex) =zero?-complex)
+  ; Exercise 2.85
+  (put 'drop 'complex
+       (lambda (x)
+         (let ((real (real-part x)) (imag (imag-part x)))
+           (if (= 0 imag)
+               real
+               (tag x)))))
   'done)
 
 (install-complex-package)
@@ -486,11 +503,12 @@
 (define (apply-generic op . args)
   (if (= (length args) 1)
       (apply-unary op (car args))
-      (fold
-       (lambda (arg acc)
-         (apply-binary op arg acc))
-       (car args)
-       (cdr args))))
+      (drop
+       (fold
+        (lambda (arg acc)
+          (apply-binary op arg acc))
+        (car args)
+        (cdr args)))))
 
 
 ;; Display helpers
@@ -505,3 +523,12 @@
 (define (println . args)
   (apply print args)
   (newline))
+
+
+;; Exercise 2.85
+
+(define (drop x)
+  (let ((drop-proc (get 'drop (type-tag x))))
+    (if drop-proc
+        (drop (drop-proc (contents x)))
+        x)))
