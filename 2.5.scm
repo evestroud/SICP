@@ -144,12 +144,9 @@
        (lambda (x)
          ((get-coercion 'rational 'complex) x)))
                                         ; Exercise 2.85
-  (put 'drop 'rational
+  (put 'project 'rational
        (lambda (x)
-         (let ((reducible? (= 0 (remainder (numer x) (denom x)))))
-           (if reducible?
-               (/ (numer x) (denom x))
-               (tag x)))))
+         (floor-quotient (numer x) (denom x))))
   'done)
 
 (install-rational-package)
@@ -306,12 +303,9 @@
                                         ; Exercise 2.80
   (put '=zero? '(complex) =zero?-complex)
   ; Exercise 2.85
-  (put 'drop 'complex
+  (put 'project 'complex
        (lambda (x)
-         (let ((real (real-part x)) (imag (imag-part x)))
-           (if (= 0 imag)
-               real
-               (tag x)))))
+         (make-rational (real-part x) 1)))
   'done)
 
 (install-complex-package)
@@ -503,12 +497,14 @@
 (define (apply-generic op . args)
   (if (= (length args) 1)
       (apply-unary op (car args))
-      (drop
-       (fold
-        (lambda (arg acc)
-          (apply-binary op arg acc))
-        (car args)
-        (cdr args)))))
+      (let ((result (fold
+                     (lambda (arg acc)
+                       (apply-binary op arg acc))
+                     (car args)
+                     (cdr args))))
+        (if (not (boolean? result))
+            (drop result)
+            result))))
 
 
 ;; Display helpers
@@ -528,7 +524,10 @@
 ;; Exercise 2.85
 
 (define (drop x)
-  (let ((drop-proc (get 'drop (type-tag x))))
-    (if drop-proc
-        (drop (drop-proc (contents x)))
+  (let ((proc (get 'project (type-tag x))))
+    (if proc
+        (let ((projected (proc (contents x))))
+          (if (equ? x (raise projected))
+              (drop projected)
+              x))
         x)))
