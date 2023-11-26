@@ -171,8 +171,8 @@
       (cons (* r (cos a)) (* r (sin a))))
                                         ; Exercise 2.79
     (define (equ?-rectangular x y)
-      (and (= (real-part x) (real-part y))
-           (= (imag-part x) (imag-part y))))
+      (and (equ? (real-part x) (real-part y))
+           (equ? (imag-part x) (imag-part y))))
                                         ; Exercise 2.80
     (define (=zero?-rectangular n)
       (and (= 0 (real-part n))
@@ -210,8 +210,8 @@
             (atan y x)))
                                         ; Exercise 2.79
     (define (equ?-polar x y)
-      (and (= (magnitude x) (magnitude y))
-           (= (angle x) (angle y))))
+      (and (equ? (magnitude x) (magnitude y))
+           (equ? (angle x) (angle y))))
                                         ; Exercise 2.80
     (define (=zero?-polar n)
       (= 0 (magnitude n)))
