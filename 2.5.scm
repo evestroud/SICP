@@ -474,8 +474,9 @@
 
 (define (apply-unary op x)
   (let* ((type (type-tag x))
-         (proc (get op (list type))))
-    (proc x)))
+         (proc (get op (list type)))
+         (value (contents x)))
+    (proc value)))
 
 (define (apply-binary op x y)
   (let* ((x-type (type-tag x))
