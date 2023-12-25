@@ -98,10 +98,11 @@
   (define (numer x) (car x))
   (define (denom x) (cdr x))
   (define (make-rat n d)
-    (if (=zero? d)
-        (error "Cannot make a rational number with a denominator of 0")
-        (let ((g (gcd n d)))
-          (cons (/ n g) (/ d g)))))
+    (cond ((=zero? d) (error "Cannot make a rational number with a denominator of 0"))
+          ((and (equal? 'scheme-number (type-tag n)) (equal? 'scheme-number (type-tag d)))
+           (let ((g (gcd n d)))
+                  (cons (/ n g) (/ d g))))
+          (else (contents (div n d)))))
   (define (add-rat x y)
     (make-rat (+ (* (numer x) (denom y))
                  (* (numer y) (denom x)))
@@ -118,8 +119,8 @@
               (* (numer x) (denom y))))
                                         ; Exercise 2.79
   (define (equ?-rat x y)
-    (and (= (numer x) (numer y))
-         (= (denom y) (denom y))))
+    (and (equ? (numer x) (numer y))
+         (equ? (denom y) (denom y))))
                                         ; Exercise 2.80
   (define (=zero?-rat n)
     (= 0 (numer n)))
@@ -259,20 +260,20 @@
   ;; internal procedures
   (define (add-complex z1 z2)
     (make-from-real-imag
-     (+ (real-part z1) (real-part z2))
-     (+ (imag-part z1) (imag-part z2))))
+     (add (real-part z1) (real-part z2))
+     (add (imag-part z1) (imag-part z2))))
   (define (sub-complex z1 z2)
     (make-from-real-imag
-     (- (real-part z1) (real-part z2))
-     (- (imag-part z1) (imag-part z2))))
+     (sub (real-part z1) (real-part z2))
+     (sub (imag-part z1) (imag-part z2))))
   (define (mul-complex z1 z2)
     (make-from-mag-ang
-     (* (magnitude z1) (magnitude z2))
-     (+ (angle z1) (angle z2))))
+     (mul (magnitude z1) (magnitude z2))
+     (add (angle z1) (angle z2))))
   (define (div-complex z1 z2)
     (make-from-mag-ang
-     (/ (magnitude z1) (magnitude z2))
-     (- (angle z1) (angle z2))))
+     (div (magnitude z1) (magnitude z2))
+     (sub (angle z1) (angle z2))))
   ;; interface to rest of the system
   (define (tag z) (attach-tag 'complex z))
   (put 'add '(complex complex)
