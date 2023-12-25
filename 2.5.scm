@@ -9,7 +9,7 @@
 
 (define (type-tag datum)
   (cond ((pair? datum) (car datum))
-        ((number? datum) 'scheme-number)
+        ((number? datum) 'integer)
         (else (error "Bad tagged datum:
               TYPE-TAG" datum))))
 
@@ -61,37 +61,37 @@
     (hash-set! operator-and-type-table op type-table)))
 
 ;; Setting up arithmetic packages
-(define (install-scheme-number-package)
+(define (install-integer-package)
   (define (tag x)
-    (attach-tag 'scheme-number x))
-  (put 'add '(scheme-number scheme-number)
+    (attach-tag 'integer x))
+  (put 'add '(integer integer)
        (lambda (x y) (tag (+ x y))))
-  (put 'sub '(scheme-number scheme-number)
+  (put 'sub '(integer integer)
        (lambda (x y) (tag (- x y))))
-  (put 'mul '(scheme-number scheme-number)
+  (put 'mul '(integer integer)
        (lambda (x y) (tag (* x y))))
-  (put 'div '(scheme-number scheme-number)
+  (put 'div '(integer integer)
        (lambda (x y) (tag (/ x y))))
-  (put 'make 'scheme-number
+  (put 'make 'integer
        (lambda (x) (tag x)))
                                         ; Exercise 2.79
-  (put 'equ? '(scheme-number scheme-number) =)
+  (put 'equ? '(integer integer) =)
                                         ; Exercise 2.80
-  (put '=zero? '(scheme-number) (lambda (n) (= n 0)))
+  (put '=zero? '(integer) (lambda (n) (= n 0)))
                                         ; Exercise 2.81
   (put 'exp
-       '(scheme-number scheme-number)
+       '(integer integer)
        (lambda (x y)
          (tag (expt x y))))
                                         ; Exercise 2.83
-  (put 'raise 'scheme-number
+  (put 'raise 'integer
        (lambda (x)
-         ((get-coercion 'scheme-number 'rational) x)))
+         ((get-coercion 'integer 'rational) x)))
   'done)
 
-(install-scheme-number-package)
-(define (make-scheme-number n)
-  ((get 'make 'scheme-number) n))
+(install-integer-package)
+(define (make-integer n)
+  ((get 'make 'integer) n))
 
 (define (install-rational-package)
   ;; internal procedures
@@ -99,7 +99,7 @@
   (define (denom x) (cdr x))
   (define (make-rat n d)
     (cond ((=zero? d) (error "Cannot make a rational number with a denominator of 0"))
-          ((and (equal? 'scheme-number (type-tag n)) (equal? 'scheme-number (type-tag d)))
+          ((and (equal? 'integer (type-tag n)) (equal? 'integer (type-tag d)))
            (let ((g (gcd n d)))
                   (cons (/ n g) (/ d g))))
           (else (contents (div n d)))))
@@ -415,21 +415,21 @@
 
 ; Coercion operations
 
-(define (scheme-number->complex n)
+(define (integer->complex n)
   (make-complex-from-real-imag
    (contents n) 0))
 
-(put-coercion 'scheme-number 'complex
-              scheme-number->complex)
+(put-coercion 'integer 'complex
+              integer->complex)
 
 
 ;; Exercise 2.81
 
-(define (scheme-number->scheme-number n) n)
+(define (integer->integer n) n)
 (define (complex->complex z) z)
 
-(put-coercion 'scheme-number 'scheme-number
-              scheme-number->scheme-number)
+(put-coercion 'integer 'integer
+              integer->integer)
 
 (put-coercion 'complex 'complex
               complex->complex)
@@ -446,7 +446,7 @@
         (coerce n)
         #f)))
 
-(put-coercion 'scheme-number 'rational
+(put-coercion 'integer 'rational
               (lambda (n) (make-rational n 1)))
 
 (put-coercion 'rational 'complex
@@ -456,9 +456,11 @@
 ;; Exercise 2.84
 
 (define tower
+  ; TODO replace integer with real and integer types
   '(complex
+    ; real
     rational
-    scheme-number))
+    integer))
 
 (define (get-height type)
   (list-index
