@@ -114,8 +114,8 @@
     (make-rat (* (numer x) (numer y))
               (* (denom x) (denom y))))
   (define (div-rat x y)
-    (make-rat (* (numer x) (denom y))
-              (* (denom x) (numer y))))
+    (make-rat (* (denom x) (numer y))
+              (* (numer x) (denom y))))
                                         ; Exercise 2.79
   (define (equ?-rat x y)
     (and (= (numer x) (numer y))
