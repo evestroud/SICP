@@ -9,7 +9,8 @@
 
 (define (type-tag datum)
   (cond ((pair? datum) (car datum))
-        ((number? datum) 'integer)
+        ((integer? datum) 'integer)
+        ((real? datum) 'real)
         (else (error "Bad tagged datum:
               TYPE-TAG" datum))))
 
@@ -60,6 +61,28 @@
      value)
     (hash-set! operator-and-type-table op type-table)))
 
+; Coercion table
+
+(define coercion-table (make-hash-table))
+(define (get-coercion type1 type2)
+                                        ; Exercise 2.81
+  (if (eq? type1 type2)
+      #f
+      (let ((coercions-for-type (hash-ref coercion-table type1)))
+        (if coercions-for-type
+            (hash-ref
+             coercions-for-type
+             type2)
+            #f))))
+(define (put-coercion type1 type2 value)
+  (let ((type-table (hash-ref coercion-table type1 (make-hash-table))))
+    (hash-set!
+     type-table
+     type2
+     value)
+    (hash-set! coercion-table type1 type-table)))
+
+
 ;; Setting up arithmetic packages
 (define (install-integer-package)
   (define (tag x)
@@ -84,6 +107,8 @@
        (lambda (x y)
          (tag (expt x y))))
                                         ; Exercise 2.83
+  (put-coercion 'integer 'rational
+                (lambda (n) (make-rational n 1)))
   (put 'raise 'integer
        (lambda (x)
          ((get-coercion 'integer 'rational) x)))
@@ -101,7 +126,7 @@
     (cond ((=zero? d) (error "Cannot make a rational number with a denominator of 0"))
           ((and (equal? 'integer (type-tag n)) (equal? 'integer (type-tag d)))
            (let ((g (gcd n d)))
-                  (cons (/ n g) (/ d g))))
+             (cons (/ n g) (/ d g))))
           (else (contents (div n d)))))
   (define (add-rat x y)
     (make-rat (+ (* (numer x) (denom y))
@@ -141,9 +166,13 @@
                                         ; Exercise 2.80
   (put '=zero? '(rational) =zero?-rat)
                                         ; Exercise 2.83
+  (put-coercion 'rational 'real
+                (lambda (x)
+                  (let ((n (contents x)))
+                    (exact->inexact (/ (numer n) (denom n))))))
   (put 'raise 'rational
        (lambda (x)
-         ((get-coercion 'rational 'complex) x)))
+         ((get-coercion 'rational 'real) x)))
                                         ; Exercise 2.85
   (put 'project 'rational
        (lambda (x)
@@ -153,6 +182,45 @@
 (install-rational-package)
 (define (make-rational n d)
   ((get 'make 'rational) n d))
+
+(define (install-real-package)
+  (define (tag x)
+    (attach-tag 'real x))
+  (put 'add '(real real)
+       (lambda (x y) (tag (+ x y))))
+  (put 'sub '(real real)
+       (lambda (x y) (tag (- x y))))
+  (put 'mul '(real real)
+       (lambda (x y) (tag (* x y))))
+  (put 'div '(real real)
+       (lambda (x y) (tag (/ x y))))
+  (put 'make 'real
+       (lambda (x) (tag x)))
+                                        ; Exercise 2.79
+  (put 'equ? '(real real) =)
+                                        ; Exercise 2.80
+  (put '=zero? '(real) (lambda (n) (= n 0)))
+                                        ; Exercise 2.81
+  (put 'exp
+       '(real real)
+       (lambda (x y)
+         (tag (expt x y))))
+                                        ; Exercise 2.83
+  (put-coercion 'real 'complex
+                (lambda (x) (make-complex-from-real-imag x 0)))
+  (put 'raise 'real
+       (lambda (x)
+         ((get-coercion 'real 'complex) x)))
+  (put 'project 'real
+       (lambda (x)
+         ; challenge i won't get around to: make my own rationalize fn
+         (let ((n (rationalize (inexact->exact x) 1/100)))
+           (make-rational (numerator n) (denominator n)))))
+  'done)
+
+(install-real-package)
+(define (make-real n)
+  ((get 'make 'real) n))
 
 (define (install-complex-package)
   ;; imported procedures from rectangular
@@ -306,7 +374,7 @@
   ; Exercise 2.85
   (put 'project 'complex
        (lambda (x)
-         (make-rational (real-part x) 1)))
+         (make-real (real-part x))))
   'done)
 
 (install-complex-package)
@@ -326,27 +394,6 @@
 
 
 ;; Coercion
-
-; Coercion table
-
-(define coercion-table (make-hash-table))
-(define (get-coercion type1 type2)
-                                        ; Exercise 2.81
-  (if (eq? type1 type2)
-      #f
-      (let ((coercions-for-type (hash-ref coercion-table type1)))
-        (if coercions-for-type
-            (hash-ref
-             coercions-for-type
-             type2)
-            #f))))
-(define (put-coercion type1 type2 value)
-  (let ((type-table (hash-ref coercion-table type1 (make-hash-table))))
-    (hash-set!
-     type-table
-     type2
-     value)
-    (hash-set! coercion-table type1 type-table)))
 
 ;; (define (apply-generic op . args)
 ;;   (let ((type-tags (map type-tag args)))
@@ -415,24 +462,24 @@
 
 ; Coercion operations
 
-(define (integer->complex n)
-  (make-complex-from-real-imag
-   (contents n) 0))
+;; (define (integer->complex n)
+;;   (make-complex-from-real-imag
+;;    (contents n) 0))
 
-(put-coercion 'integer 'complex
-              integer->complex)
+;; (put-coercion 'integer 'complex
+;;               integer->complex)
 
 
 ;; Exercise 2.81
 
-(define (integer->integer n) n)
-(define (complex->complex z) z)
+;; (define (integer->integer n) n)
+;; (define (complex->complex z) z)
 
-(put-coercion 'integer 'integer
-              integer->integer)
+;; (put-coercion 'integer 'integer
+;;               integer->integer)
 
-(put-coercion 'complex 'complex
-              complex->complex)
+;; (put-coercion 'complex 'complex
+;;               complex->complex)
 
 (define (exp x y)
   (apply-generic 'exp x y))
@@ -446,19 +493,15 @@
         (coerce n)
         #f)))
 
-(put-coercion 'integer 'rational
-              (lambda (n) (make-rational n 1)))
-
-(put-coercion 'rational 'complex
-              (lambda (n) (make-complex-from-real-imag n 0)))
+;; (put-coercion 'rational 'complex
+;;               (lambda (n) (make-complex-from-real-imag n 0)))
 
 
 ;; Exercise 2.84
 
 (define tower
-  ; TODO replace integer with real and integer types
   '(complex
-    ; real
+    real
     rational
     integer))
 
