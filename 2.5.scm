@@ -534,6 +534,7 @@
     (proc value)))
 
 (define (apply-binary op x y)
+  (println op x y)
   (let* ((x-type (type-tag x))
          (y-type (type-tag y))
          (proc (get op (list x-type y-type))))
