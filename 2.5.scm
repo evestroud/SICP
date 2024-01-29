@@ -3,6 +3,15 @@
 ;; Tag operations
                                         ; Exercise 2.78
 (define (attach-tag type-tag contents)
+  ; TODO guile's built-in number predicates will pass reals as ints/rats if it can
+  ; convert them easily, leading to loops where raising 1 -> 1.0 gets constantly
+  ; re-interpreted as an integer (or 0.5 as a rational)
+  ; - remove the implicit stripping of type tags
+  ; - add explicit tagging back to integer and real packages
+  ; - MAYBE - remove type inference in type-tag
+  ;     - this is the majority of the syntactic sugar
+  ;     - refactor it to convert and tag Scheme rationals to package rationals?
+  ;     - could also add a set of meta functions that strip tags and convert to Scheme numbers
   (if (number? contents)
       contents
       (cons type-tag contents)))
