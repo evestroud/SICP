@@ -1,5 +1,12 @@
 (use-modules (srfi srfi-1))
 
+;; GIVING UP ON 2.86
+
+;; TOO MANY INCOMPATIBILITIES BETWEEN IMPLEMENTATIONS OF PREVIOUS EXERCISES
+;; (ESPECIALLY 2.83 AND WHEREVER THE SYNTACTIC SUGAR FOR INTEGERS WAS SPECIFIED)
+
+;; NEEDS REWRITE TO COMPLETE
+
 ;; Tag operations
                                         ; Exercise 2.78
 (define (attach-tag type-tag contents)
