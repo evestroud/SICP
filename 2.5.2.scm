@@ -1,5 +1,6 @@
 ;; Operator and type table
 (define operator-and-type-table (make-hash-table))
+
 (define (get op type)
   (let ((type-table-for-op (hash-ref operator-and-type-table op)))
     (if type-table-for-op
@@ -7,6 +8,7 @@
          type-table-for-op
          type)
         #f)))
+
 (define (put op type value)
   (let ((type-table (hash-ref operator-and-type-table op (make-hash-table))))
     (hash-set!
@@ -81,6 +83,10 @@
        (lambda (x y) (tag (* x y))))
   (put 'div '(integer integer)
        (lambda (x y) (tag (/ x y))))
+  (put 'equ? '(integer integer)
+       (lambda (x y) (= x y)))
+  (put '=zero? '(integer)
+       (lambda (x) (= x 0)))
   (put 'make 'integer
        (lambda (x) (tag x)))
   'done)
@@ -111,6 +117,11 @@
   (define (div-rat x y)
     (make-rat (* (numer x) (denom y))
               (* (denom x) (numer y))))
+  (define (equ?-rat x y)
+    (and (= (numer x) (numer y))
+         (= (denom x) (denom y))))
+  (define (=zero?-rat x)
+    (= 0 (numer x)))
   ;; interface to rest of the system
   (define (tag x) (attach-tag 'rational x))
   (put 'add '(rational rational)
@@ -121,6 +132,10 @@
        (lambda (x y) (tag (mul-rat x y))))
   (put 'div '(rational rational)
        (lambda (x y) (tag (div-rat x y))))
+  (put 'equ? '(rational rational)
+       (lambda (x y) (equ?-rat x y)))
+  (put '=zero? '(rational)
+       (lambda (x) (=zero?-rat x)))
   (put 'make 'rational
        (lambda (n d) (tag (make-rat n d))))
   'done)
@@ -144,6 +159,12 @@
       (atan (imag-part z) (real-part z)))
     (define (make-from-mag-ang r a)
       (cons (* r (cos a)) (* r (sin a))))
+    (define (equ?-rectangular x y)
+      (and (equ? (real-part x) (real-part y))
+           (equ? (imag-part x) (imag-part y))))
+    (define (=zero?-rectangular n)
+      (and (= 0 (real-part n))
+           (= 0 (imag-part n))))
     ;; interface to the rest of the system
     (define (tag x)
       (attach-tag 'rectangular x))
@@ -157,6 +178,8 @@
     (put 'make-from-mag-ang 'rectangular
          (lambda (r a)
            (tag (make-from-mag-ang r a))))
+    (put 'equ? '(rectangular rectangular) equ?-rectangular)
+    (put '=zero? '(rectangular) =zero?-rectangular)
     'done)
   (install-rectangular-package)
 
@@ -172,6 +195,11 @@
     (define (make-from-real-imag x y)
       (cons (sqrt (+ (expt x 2) (expt y 2)))
             (atan y x)))
+    (define (equ?-polar x y)
+      (and (equ? (magnitude x) (magnitude y))
+           (equ? (angle x) (angle y))))
+    (define (=zero?-polar n)
+      (= 0 (magnitude n)))
     ;; interface to the rest of the system
     (define (tag x) (attach-tag 'polar x))
     (put 'real-part '(polar) real-part)
@@ -184,6 +212,8 @@
     (put 'make-from-mag-ang 'polar
          (lambda (r a)
            (tag (make-from-mag-ang r a))))
+    (put 'equ? '(polar polar) equ?-polar)
+    (put '=zero? '(polar) =zero?-polar)
     'done)
   (install-polar-package)
 
@@ -213,6 +243,10 @@
     (make-from-mag-ang
      (/ (magnitude z1) (magnitude z2))
      (- (angle z1) (angle z2))))
+  (define (equ?-complex x y)
+    (equ? x y))
+  (define (=zero?-complex n)
+    (=zero? n))
   ;; interface to rest of the system
   (define (tag z) (attach-tag 'complex z))
   (put 'real-part '(complex) real-part)
@@ -231,6 +265,8 @@
   (put 'div '(complex complex)
        (lambda (z1 z2)
          (tag (div-complex z1 z2))))
+  (put 'equ? '(complex complex) equ?-complex)
+  (put '=zero? '(complex) =zero?-complex)
   (put 'make-from-real-imag 'complex
        (lambda (x y)
          (tag (make-from-real-imag x y))))
