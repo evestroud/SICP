@@ -1,3 +1,5 @@
+(use-modules (srfi srfi-1))
+
 ;; Operator and type table
 (define operator-and-type-table (make-hash-table))
 
@@ -54,15 +56,74 @@
       (error "Bad tagged datum:
               CONTENTS" datum)))
 
+(define tower
+  '(complex
+    real
+    rational
+    integer))
+
+(define (get-height type)
+  (list-index
+   (lambda (elem) (eq? elem type))
+   tower))
+
+(define (raise n)
+  (let ((coerce (get 'raise (type-tag n))))
+    (if coerce
+        (coerce n)
+        #f)))
+
+(define (raise-to-height value target)
+  (let* ((type (type-tag value))
+         (height (get-height type)))
+    (cond
+     ((= height target) value)
+     ((> target height) (error "Invalid raise" (list height target)))
+     (else (raise-to-height (raise value) target)))))
+
+(define (drop x)
+  (let ((proc (get 'project (type-tag x))))
+    (if proc
+        (let ((projected (proc (contents x))))
+          (if (equ? x (raise projected))
+              (drop projected)
+              x))
+        x)))
+
+(define (apply-unary op x)
+  (let* ((type (type-tag x))
+         (proc (get op (list type)))
+         (value (contents x)))
+    (proc value)))
+
+(define (apply-binary op x y)
+  (let* ((x-type (type-tag x))
+         (y-type (type-tag y))
+         (proc (get op (list x-type y-type))))
+    (if proc
+        (apply proc (map contents (list x y)))
+        (let* ((x-height (get-height x-type))
+               (y-height (get-height y-type)))
+          (cond
+           ((< x-height y-height)
+            (let ((raised-y (raise-to-height y x-height)))
+              (apply-binary op x raised-y)))
+           ((> x-height y-height)
+            (let ((raised-x (raise-to-height x y-height)))
+              (apply-binary op raised-x y)))
+           (else (error "APPLY-BINARY: No method for these types" (list op x y))))))))
+
 (define (apply-generic op . args)
-  (let ((type-tags (map type-tag args)))
-    (let ((proc (get op type-tags)))
-      (if proc
-          (apply proc (map contents args))
-          (error
-            "No method for these types:
-             APPLY-GENERIC"
-            (list op type-tags))))))
+  (if (= (length args) 1)
+      (apply-unary op (car args))
+      (let ((result (fold
+                     (lambda (arg acc)
+                       (apply-binary op arg acc))
+                     (car args)
+                     (cdr args))))
+        (if (not (boolean? result))
+            (drop result)
+            result))))
 
 (define (add . args) (apply apply-generic (cons 'add args)))
 (define (sub . args) (apply apply-generic (cons 'sub args)))
@@ -89,6 +150,11 @@
        (lambda (x) (= x 0)))
   (put 'make 'integer
        (lambda (x) (tag x)))
+  (put-coercion 'integer 'rational
+                (lambda (n) (make-rational (contents n) 1)))
+  (put 'raise 'integer
+       (lambda (x)
+         ((get-coercion 'integer 'rational) x)))
   'done)
 
 (install-integer-package)
@@ -138,12 +204,53 @@
        (lambda (x) (=zero?-rat x)))
   (put 'make 'rational
        (lambda (n d) (tag (make-rat n d))))
+  (put-coercion 'rational 'real
+                (lambda (x)
+                  (let ((n (contents x)))
+                    (exact->inexact (/ (numer n) (denom n))))))
+  (put 'raise 'rational
+       (lambda (x)
+         (make-real ((get-coercion 'rational 'real) x))))
+  (put 'project 'rational
+       (lambda (x)
+         (make-integer (floor-quotient (numer x) (denom x)))))
   'done)
 
 (install-rational-package)
 
 (define (make-rational n d)
   ((get 'make 'rational) n d))
+
+(define (install-real-package)
+  (define (tag x)
+    (attach-tag 'real x))
+  (put 'add '(real real)
+       (lambda (x y) (tag (+ x y))))
+  (put 'sub '(real real)
+       (lambda (x y) (tag (- x y))))
+  (put 'mul '(real real)
+       (lambda (x y) (tag (* x y))))
+  (put 'div '(real real)
+       (lambda (x y) (tag (/ x y))))
+  (put 'make 'real
+       (lambda (x) (tag x)))
+  (put 'equ? '(real real) =)
+  (put '=zero? '(real) (lambda (n) (= n 0)))
+  (put-coercion 'real 'complex
+                (lambda (x) (make-complex-from-real-imag (contents x) 0)))
+  (put 'raise 'real
+       (lambda (x)
+         ((get-coercion 'real 'complex) x)))
+  (put 'project 'real
+       (lambda (x)
+         (let ((n (rationalize (inexact->exact x) 1/100)))
+           (make-rational (numerator n) (denominator n)))))
+  'done)
+
+(install-real-package)
+
+(define (make-real n)
+  ((get 'make 'real) n))
 
 (define (install-complex-package)
   (define (install-rectangular-package)
@@ -160,8 +267,8 @@
     (define (make-from-mag-ang r a)
       (cons (* r (cos a)) (* r (sin a))))
     (define (equ?-rectangular x y)
-      (and (equ? (real-part x) (real-part y))
-           (equ? (imag-part x) (imag-part y))))
+      (and (= (real-part x) (real-part y))
+           (= (imag-part x) (imag-part y))))
     (define (=zero?-rectangular n)
       (and (= 0 (real-part n))
            (= 0 (imag-part n))))
@@ -196,8 +303,8 @@
       (cons (sqrt (+ (expt x 2) (expt y 2)))
             (atan y x)))
     (define (equ?-polar x y)
-      (and (equ? (magnitude x) (magnitude y))
-           (equ? (angle x) (angle y))))
+      (and (= (magnitude x) (magnitude y))
+           (= (angle x) (angle y))))
     (define (=zero?-polar n)
       (= 0 (magnitude n)))
     ;; interface to the rest of the system
@@ -273,6 +380,9 @@
   (put 'make-from-mag-ang 'complex
        (lambda (r a)
          (tag (make-from-mag-ang r a))))
+  (put 'project 'complex
+       (lambda (x)
+         (make-real (real-part x))))
   'done)
 
 (install-complex-package)
