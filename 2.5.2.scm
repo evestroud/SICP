@@ -114,16 +114,16 @@
            (else (error "APPLY-BINARY: No method for these types" (list op x y))))))))
 
 (define (apply-generic op . args)
-  (if (= (length args) 1)
-      (apply-unary op (car args))
-      (let ((result (fold
-                     (lambda (arg acc)
-                       (apply-binary op arg acc))
-                     (car args)
-                     (cdr args))))
-        (if (not (boolean? result))
-            (drop result)
-            result))))
+  (let ((result
+         (if (= (length args) 1)
+             (apply-unary op (car args))
+             (fold (lambda (arg acc)
+                     (apply-binary op arg acc))
+                   (car args)
+                   (cdr args)))))
+    (if (not (boolean? result))
+        (drop result)
+        result)))
 
 (define (add . args) (apply apply-generic (cons 'add args)))
 (define (sub . args) (apply apply-generic (cons 'sub args)))
