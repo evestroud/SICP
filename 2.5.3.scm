@@ -557,6 +557,13 @@
             t1
             (rest-terms L))))))
 
+  (define (=zero?-poly p)
+    (fold
+     (lambda (term result)
+       (and result (=zero? (coeff term))))
+     #t
+     (term-list p)))
+
   ;; interface to rest of the system
   (define (tag p) (attach-tag 'polynomial p))
   (put 'add '(polynomial polynomial)
@@ -565,6 +572,9 @@
   (put 'mul '(polynomial polynomial)
        (lambda (p1 p2)
          (tag (mul-poly p1 p2))))
+  (put '=zero? '(polynomial)
+       (lambda (p)
+         (=zero?-poly p)))
   (put 'make 'polynomial
        (lambda (var terms)
          (tag (make-poly var terms))))
