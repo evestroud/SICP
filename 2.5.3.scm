@@ -476,19 +476,44 @@
          (eq? v1 v2)))
 
   ;; representation of terms and term lists
-  (define (adjoin-term term term-list)
-    (if (=zero? (coeff term))
-        term-list
-        (cons term term-list)))
-  (define (the-empty-termlist) '())
-  (define (first-term term-list) (car term-list))
-  (define (rest-terms term-list) (cdr term-list))
-  (define (empty-termlist? term-list)
-    (null? term-list))
   (define (make-term order coeff)
     (list order coeff))
   (define (order term) (car term))
   (define (coeff term) (cadr term))
+
+  (define (install-sparse-term-list-package)
+    (define (tag term-list) (attach-tag 'sparse-term-list term-list))
+    (define (adjoin-term-sparse term term-list)
+      (if (=zero? (coeff term))
+          term-list
+          (cons term term-list)))
+    (define (empty-termlist?-sparse term-list)
+      (null? term-list))
+    (define (first-term-sparse term-list) (car term-list))
+    (define (rest-terms-sparse term-list) (cdr term-list))
+    (put 'adjoin-term '(sparse-term-list)
+         (lambda (term term-list) (tag (adjoin-term-sparse term term-list))))
+    (put 'empty-termlist? '(sparse-term-list) empty-termlist?-sparse)
+    (put 'first-term '(sparse-term-list) first-term-sparse)
+    (put 'rest-terms '(sparse-term-list)
+         (lambda (term-list)
+           (tag (rest-terms-sparse term-list))))
+    (put 'map-terms '(sparse-term-list)
+         (lambda (proc term-list) (tag (map proc term-list))))
+    'done)
+  (install-sparse-term-list-package)
+
+  (define (adjoin-term term term-list)
+    (let* ((type (type-tag term-list))
+           (terms (contents term-list)))
+      ((get 'adjoin-term (list type)) term terms)))
+  (define (empty-termlist? term-list) (apply-generic 'empty-termlist? term-list))
+  (define (first-term term-list) (apply-generic 'first-term term-list))
+  (define (rest-terms term-list) (apply-generic 'rest-terms term-list))
+  (define (map-terms proc term-list)
+    (if (empty-termlist? term-list)
+        term-list
+        (adjoin-term (proc (first-term term-list)) (map-terms proc (rest-terms term-list)))))
 
   ;; operations
   (define (add-poly p1 p2)
@@ -539,9 +564,10 @@
               ADD-POLY"
                (list p1 p2))))
   (define (negate-terms terms)
-    (map (lambda (t)
-           (make-term (order t) (mul (coeff t) (make-integer -1))))
-         terms))
+    (map-terms
+     (lambda (t)
+       (make-term (order t) (mul (coeff t) (make-integer -1))))
+     terms))
 
   (define (mul-poly p1 p2)
     (if (same-variable? (variable p1)
@@ -555,14 +581,14 @@
                (list p1 p2))))
   (define (mul-terms L1 L2)
     (if (empty-termlist? L1)
-        (the-empty-termlist)
+        L1
         (add-terms
          (mul-term-by-all-terms
           (first-term L1) L2)
          (mul-terms (rest-terms L1) L2))))
   (define (mul-term-by-all-terms t1 L)
     (if (empty-termlist? L)
-        (the-empty-termlist)
+        L
         (let ((t2 (first-term L)))
           (adjoin-term
            (make-term
