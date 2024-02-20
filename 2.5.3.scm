@@ -528,6 +528,21 @@
                       (rest-terms L1)
                       (rest-terms L2)))))))))
 
+  (define (sub-poly p1 p2)
+    (if (same-variable? (variable p1)
+                        (variable p2))
+        (make-poly
+         (variable p1)
+         (add-terms (term-list p1)
+                    (negate-terms (term-list p2))))
+        (error "Polys not in same var:
+              ADD-POLY"
+               (list p1 p2))))
+  (define (negate-terms terms)
+    (map (lambda (t)
+           (make-term (order t) (mul (coeff t) (make-integer -1))))
+         terms))
+
   (define (mul-poly p1 p2)
     (if (same-variable? (variable p1)
                         (variable p2))
@@ -569,6 +584,9 @@
   (put 'add '(polynomial polynomial)
        (lambda (p1 p2)
          (tag (add-poly p1 p2))))
+  (put 'sub '(polynomial polynomial)
+       (lambda (p1 p2)
+         (tag (sub-poly p1 p2))))
   (put 'mul '(polynomial polynomial)
        (lambda (p1 p2)
          (tag (mul-poly p1 p2))))
