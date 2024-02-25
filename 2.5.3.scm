@@ -498,8 +498,6 @@
     (put 'rest-terms '(sparse-term-list)
          (lambda (term-list)
            (tag (rest-terms-sparse term-list))))
-    (put 'map-terms '(sparse-term-list)
-         (lambda (proc term-list) (tag (map proc term-list))))
     'done)
   (install-sparse-term-list-package)
 
@@ -513,7 +511,10 @@
   (define (map-terms proc term-list)
     (if (empty-termlist? term-list)
         term-list
-        (adjoin-term (proc (first-term term-list)) (map-terms proc (rest-terms term-list)))))
+        (let ((term-order (order (first-term term-list)))
+              (term-coeff (coeff (first-term term-list))))
+          (adjoin-term (make-term term-order (proc term-coeff))
+                       (map-terms proc (rest-terms term-list))))))
 
   ;; operations
   (define (add-poly p1 p2)
@@ -565,8 +566,7 @@
                (list p1 p2))))
   (define (negate-terms terms)
     (map-terms
-     (lambda (t)
-       (make-term (order t) (mul (coeff t) (make-integer -1))))
+     (lambda (t) (mul t (make-integer -1)))
      terms))
 
   (define (mul-poly p1 p2)
