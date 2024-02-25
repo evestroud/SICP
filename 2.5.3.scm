@@ -517,7 +517,7 @@
                        (map-terms proc (rest-terms term-list))))))
 
   ;; operations
-  (define (add-poly p1 p2)
+  (define (add-poly p2 p1)
     (if (same-variable? (variable p1)
                         (variable p2))
         (make-poly
@@ -554,7 +554,7 @@
                       (rest-terms L1)
                       (rest-terms L2)))))))))
 
-  (define (sub-poly p1 p2)
+  (define (sub-poly p2 p1)
     (if (same-variable? (variable p1)
                         (variable p2))
         (make-poly
@@ -569,7 +569,7 @@
      (lambda (t) (mul t (make-integer -1)))
      terms))
 
-  (define (mul-poly p1 p2)
+  (define (mul-poly p2 p1)
     (if (same-variable? (variable p1)
                         (variable p2))
         (make-poly
