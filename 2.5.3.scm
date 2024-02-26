@@ -532,6 +532,7 @@
     (let* ((type (type-tag term-list))
            (terms (contents term-list)))
       ((get 'adjoin-term (list type)) term terms)))
+  (define (the-empty-termlist type) (list type))
   (define (empty-termlist? term-list) (apply-generic 'empty-termlist? term-list))
   (define (first-term term-list) (apply-generic 'first-term term-list))
   (define (rest-terms term-list) (apply-generic 'rest-terms term-list))
@@ -608,14 +609,14 @@
                (list p1 p2))))
   (define (mul-terms L1 L2)
     (if (empty-termlist? L1)
-        L1
+        (the-empty-termlist (type-tag L1))
         (add-terms
          (mul-term-by-all-terms
           (first-term L1) L2)
          (mul-terms (rest-terms L1) L2))))
   (define (mul-term-by-all-terms t1 L)
     (if (empty-termlist? L)
-        L
+        (the-empty-termlist (type-tag L))
         (let ((t2 (first-term L)))
           (adjoin-term
            (make-term
