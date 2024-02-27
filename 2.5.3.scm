@@ -669,7 +669,7 @@
      (lambda (term result)
        (and result (=zero? (coeff term))))
      #t
-     (term-list p)))
+     (contents (term-list p))))
 
   ;; variable tower
   (define variable-tower
