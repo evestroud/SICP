@@ -628,6 +628,40 @@
             t1
             (rest-terms L))))))
 
+  (define (div-poly p2 p1)
+    (if (same-variable? (variable p1)
+                        (variable p2))
+        (make-poly
+         (variable p1)
+         (div-terms (term-list p1)
+                    (term-list p2)))
+        (error "Polys not in same var:
+              DIV-POLY"
+               (list p1 p2))))
+  (define (div-terms L1 L2)
+    (if (empty-termlist? L1)
+        (list
+         (the-empty-termlist (type-tag L1))
+         (the-empty-termlist (type-tag L1)))
+        (let ((t1 (first-term L1))
+              (t2 (first-term L2)))
+          (if (> (order t2) (order t1))
+              (list (the-empty-termlist (type-tag L1)) L1)
+              (let* ((new-c (div (coeff t1)
+                                 (coeff t2)))
+                     (new-o (- (order t1)
+                               (order t2)))
+                     (new-term (make-term new-o new-c)))
+                (let* ((new-term-list (adjoin-term
+                                       new-term
+                                       (the-empty-termlist (type-tag L2))))
+                       (rest-of-result (div-terms
+                                        (sub-terms L1 (mul-terms L2 new-term-list))
+                                        L2)))
+                  (let ((quotient (first rest-of-result))
+                        (remainder (second rest-of-result)))
+                    (list (adjoin-term new-term quotient) remainder))))))))
+
   (define (=zero?-poly p)
     (fold
      (lambda (term result)
@@ -646,6 +680,9 @@
   (put 'mul '(polynomial polynomial)
        (lambda (p1 p2)
          (tag (mul-poly p1 p2))))
+  (put 'div '(polynomial polynomial)
+       (lambda (p1 p2)
+         (tag (div-poly p1 p2))))
   (put '=zero? '(polynomial)
        (lambda (p)
          (=zero?-poly p)))
