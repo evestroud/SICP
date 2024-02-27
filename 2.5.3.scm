@@ -695,3 +695,13 @@
 
 (define (make-polynomial var terms)
   ((get 'make 'polynomial) var terms))
+
+
+;; Test values
+
+(define x-sparse '(polynomial x sparse-term-list (1 (integer . 1))))
+(define one-sparse '(polynomial x sparse-term-list (0 (integer . 1))))
+(define x-one-sparse (add x-sparse one-sparse))
+(define x-dense '(polynomial x dense-term-list (integer . 1) (integer . 0)))
+(define one-dense '(polynomial x dense-term-list (integer . 1)))
+(define x-one-dense (add x-dense one-dense))
