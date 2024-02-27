@@ -587,11 +587,13 @@
                         (variable p2))
         (make-poly
          (variable p1)
-         (add-terms (term-list p1)
-                    (negate-terms (term-list p2))))
+         (sub-terms (term-list p1)
+                    (term-list p2)))
         (error "Polys not in same var:
               ADD-POLY"
                (list p1 p2))))
+  (define (sub-terms L1 L2)
+    (add-terms L1 (negate-terms L2)))
   (define (negate-terms terms)
     (map-terms
      (lambda (t) (mul t (make-integer -1)))
