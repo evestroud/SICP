@@ -552,6 +552,7 @@
          (variable p1)
          (add-terms (term-list p1)
                     (term-list p2)))
+        ;; TODO find which poly is lower and raise it
         (error "Polys not in same var:
               ADD-POLY"
                (list p1 p2))))
@@ -606,6 +607,7 @@
          (variable p1)
          (mul-terms (term-list p1)
                     (term-list p2)))
+        ;; TODO find which poly is lower and raise it
         (error "Polys not in same var:
               MUL-POLY"
                (list p1 p2))))
@@ -668,6 +670,29 @@
        (and result (=zero? (coeff term))))
      #t
      (term-list p)))
+
+  ;; variable tower
+  (define variable-tower
+    '(z y x))
+  (define (next-variable var)
+    (let ((rest-vars (memq var variable-tower)))
+      (and rest-vars (> (length rest-vars) 1) (second rest-vars))))
+  (define (raise-polynomial p)
+    (let* ((var (variable p))
+           (next-var (next-variable var)))
+      (if next-var
+          (let* ((term (make-term 0 (tag p)))
+                 (term-list (adjoin-term term
+                                         (the-empty-termlist 'sparse-term-list))))
+            (append (list next-var) term-list))
+          #f)))
+  (define (raise-polynomial-to-variable p var)
+    (let ((raised-p (raise-polynomial p)))
+      (if raised-p
+          (if (same-variable? (variable raised-p) var)
+              raised-p
+              (raise-polynomial-to-variable raised-p var))
+          (error "Invalid raise: RAISE-POLYNOMIAL-TO-VARIABLE" p var))))
 
   ;; interface to rest of the system
   (define (tag p) (attach-tag 'polynomial p))
