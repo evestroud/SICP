@@ -1,5 +1,3 @@
-#lang sicp
-
 ; Exercise 3.1
 
 (define (make-accumulator n)
